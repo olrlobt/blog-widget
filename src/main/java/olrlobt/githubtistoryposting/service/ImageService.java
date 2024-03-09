@@ -41,11 +41,20 @@ public class ImageService {
 		Graphics2D graphics = imageBox.createGraphics();
 
 		drawThumbnail(graphics, originalImage);
+		drawStroke(graphics);
 		drawTitle(graphics, posting.getTitle());
 		drawDate(graphics, posting.getDate());
-		graphics.dispose();
 
+		graphics.dispose();
 		ImageIO.write(imageBox, "png", outputFile);
+	}
+
+	private void drawStroke(Graphics2D graphics) {
+		graphics.setColor(Color.decode("#d0d7de"));
+		Stroke oldStroke = graphics.getStroke();
+		graphics.setStroke(new BasicStroke(1));
+		graphics.drawRect(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1);
+		graphics.setStroke(oldStroke);
 	}
 
 	private void drawDate(Graphics2D graphics, LocalDate date) {
