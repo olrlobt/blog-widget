@@ -24,8 +24,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
-    implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
-
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
