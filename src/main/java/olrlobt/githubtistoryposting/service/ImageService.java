@@ -34,9 +34,17 @@ public class ImageService {
 		File outputFile = new File(outputDir, count + "generated_image.png");
 
 		BufferedImage originalImage = ImageIO.read(tempImg);
-		BufferedImage resizedThumb = resizeThumb(originalImage);
+		BufferedImage imageBox = new BufferedImage(BOX_WIDTH, TOTAL_HEIGHT, BufferedImage.TYPE_INT_RGB);
+		drawBox(imageBox, originalImage);
 
-		ImageIO.write(resizedThumb, "png", outputFile);
+		ImageIO.write(imageBox, "png", outputFile);
+	}
+
+	private void drawBox(BufferedImage imageBox, BufferedImage originalImage) {
+		Graphics2D g2d = imageBox.createGraphics();
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(0, 0, BOX_WIDTH, TOTAL_HEIGHT);
+		g2d.drawImage(resizeThumb(originalImage), 0, 0, null);
 	}
 
 	private BufferedImage resizeThumb(BufferedImage originalImage) {
