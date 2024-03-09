@@ -2,6 +2,7 @@ package olrlobt.githubtistoryposting.api;
 
 import java.io.IOException;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,10 +21,10 @@ public class PostingApi {
 	private final PostingService postingService;
 	private final ImageService imageService;
 
-	@GetMapping("/api/postings")
-	public void getPostings(@RequestParam String blogName) throws IOException {
+	@GetMapping(value = "/api/postings", produces = MediaType.IMAGE_PNG_VALUE)
+	public byte[] getPostings(@RequestParam String blogName) throws IOException {
 		log.info(blogName);
 		Postings postings = postingService.postings(blogName);
-		imageService.getImageBox(postings);
+		return imageService.getImageBox(postings);
 	}
 }

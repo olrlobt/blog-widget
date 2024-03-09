@@ -2,6 +2,7 @@ package olrlobt.githubtistoryposting.service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -23,19 +24,24 @@ public class ImageService {
 	private final int BOX_HEIGHT = 126;
 	private final int TOTAL_HEIGHT = 260;
 
-	public void getImageBox(Postings postings) throws IOException {
+	public byte[] getImageBox(Postings postings) throws IOException {
+
+		// File outputDir = new File("src/main/resources/static/img/");
+		// outputDir.mkdirs();
+		// File outputFile = new File(outputDir, 1 + "generated_image.png");
+		BufferedImage imageBox = null;
 		int count = 1;
 		for (Posting posting : postings.getPostings()) {
 			File tempImg = CreateImgFile.fromUrl(posting.getThumbnail());
-			makeImageBox(tempImg, count++, posting);
+			imageBox = makeImageBox(tempImg, count++, posting);
 		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(imageBox, "png", baos);
+		return baos.toByteArray();
 	}
 
-	private void makeImageBox(File tempImg, int count, Posting posting) throws IOException {
-		File outputDir = new File("src/main/resources/static/img/");
-		outputDir.mkdirs();
-		File outputFile = new File(outputDir, count + "generated_image.png");
-
+	private BufferedImage makeImageBox(File tempImg, int count, Posting posting) throws IOException {
 		BufferedImage originalImage = ImageIO.read(tempImg);
 		BufferedImage imageBox = new BufferedImage(BOX_WIDTH, TOTAL_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = imageBox.createGraphics();
@@ -46,7 +52,7 @@ public class ImageService {
 		drawDate(graphics, posting.getDate());
 
 		graphics.dispose();
-		ImageIO.write(imageBox, "png", outputFile);
+		return imageBox;
 	}
 
 	private void drawStroke(Graphics2D graphics) {
