@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DateParser {
 
-	public static LocalDate parser(String txtDate){
+	public static LocalDate parser(String txtDate) {
 		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy. M. d. HH:mm"))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy.M.d"))
@@ -24,9 +24,9 @@ public class DateParser {
 		try {
 			TemporalAccessor ta = formatter.parseBest(txtDate, LocalDateTime::from, LocalDate::from);
 			if (ta instanceof LocalDateTime) {
-				return ((LocalDateTime) ta).toLocalDate();
+				return ((LocalDateTime)ta).toLocalDate();
 			} else if (ta instanceof LocalDate) {
-				return (LocalDate) ta;
+				return (LocalDate)ta;
 			}
 		} catch (Exception e) {
 			log.error("날짜 파싱 에러: {}", txtDate);

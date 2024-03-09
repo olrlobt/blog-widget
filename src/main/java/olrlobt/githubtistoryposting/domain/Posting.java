@@ -1,6 +1,7 @@
 package olrlobt.githubtistoryposting.domain;
 
 import java.time.LocalDate;
+
 import org.jsoup.nodes.Element;
 
 import lombok.Getter;

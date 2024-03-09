@@ -9,8 +9,8 @@ import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
-import olrlobt.githubtistoryposting.domain.Postings;
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.domain.Postings;
 import olrlobt.githubtistoryposting.utils.CreateBlogUrl;
 
 @Slf4j
