@@ -17,9 +17,9 @@ import olrlobt.githubtistoryposting.utils.CreateBlogUrl;
 @Service
 public class PostingService {
 
-	public void postings(String blogName) throws IOException {
+	public Postings postings(String blogName) throws IOException {
 		Document document = scrapingBlog(blogName);
-		Postings postings = findPostingInfo(document);
+		return findPostingInfo(document);
 	}
 
 	private Document scrapingBlog(String blogName) throws IOException {

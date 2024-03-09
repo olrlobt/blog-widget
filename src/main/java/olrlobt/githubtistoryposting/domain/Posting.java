@@ -3,28 +3,30 @@ package olrlobt.githubtistoryposting.domain;
 import java.time.LocalDate;
 import org.jsoup.nodes.Element;
 
+import lombok.Getter;
 import olrlobt.githubtistoryposting.utils.DateParser;
 
+@Getter
 public class Posting {
 
-	private final String TITLE;
-	private final String THUMBNAIL;
-	private final LocalDate DATE;
+	private final String title;
+	private final String thumbnail;
+	private final LocalDate date;
 
 	public Posting(Element element) {
-		TITLE = element.select(".tit_post ").text();
-		THUMBNAIL = element.select("img")
+		title = element.select(".tit_post ").text();
+		thumbnail = element.select("img")
 			.attr("src")
 			.split("=")[1];
-		DATE = DateParser.parser(element.select(".txt_date").text());
+		date = DateParser.parser(element.select(".txt_date").text());
 	}
 
 	@Override
 	public String toString() {
 		return "Posting{" +
-			"title='" + TITLE + '\'' +
-			", thumbnail='" + THUMBNAIL + '\'' +
-			", date=" + DATE +
+			"title='" + title + '\'' +
+			", thumbnail='" + thumbnail + '\'' +
+			", date=" + date +
 			'}';
 	}
 }
