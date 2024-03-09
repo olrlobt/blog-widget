@@ -18,11 +18,15 @@ import olrlobt.githubtistoryposting.utils.CreateBlogUrl;
 public class PostingService {
 
 	public void postings(String blogName) throws IOException {
-		Postings postings = findPosting(CreateBlogUrl.tistory(blogName));
+		Document document = scrapingBlog(blogName);
+		Postings postings = findPostingInfo(document);
 	}
 
-	private Postings findPosting(String blogUrl) throws IOException {
-		Document document = Jsoup.connect(blogUrl).get();
+	private Document scrapingBlog(String blogName) throws IOException {
+		return Jsoup.connect(CreateBlogUrl.tistory(blogName)).get();
+	}
+
+	private Postings findPostingInfo(Document document) {
 		Elements select = document.select(".list_content");
 		Postings postings = new Postings();
 
