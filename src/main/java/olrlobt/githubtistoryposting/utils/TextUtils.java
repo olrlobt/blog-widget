@@ -1,12 +1,19 @@
 package olrlobt.githubtistoryposting.utils;
 
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TextUtils {
 
 	private static final String ELLIPSIS = "...";
+
+	public static String ofLocalDate(LocalDate localDate){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+		return localDate.format(formatter);
+	}
 
 	public static List<String> wrap(Graphics2D g2d, String text, int maxWidth, int maxLine) {
 		FontMetrics metrics = g2d.getFontMetrics(g2d.getFont());

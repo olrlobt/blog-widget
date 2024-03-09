@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -41,9 +42,18 @@ public class ImageService {
 
 		drawThumbnail(graphics, originalImage);
 		drawTitle(graphics, posting.getTitle());
-		// drawDate(graphics, posting.getDate());
+		drawDate(graphics, posting.getDate());
+		graphics.dispose();
 
 		ImageIO.write(imageBox, "png", outputFile);
+	}
+
+	private void drawDate(Graphics2D graphics, LocalDate date) {
+		String createdAt = TextUtils.ofLocalDate(date);
+		graphics.setColor(Color.GRAY);
+		graphics.setFont(new Font("Noto Sans Regular", Font.PLAIN, 11));
+
+		graphics.drawString(createdAt, 25, TOTAL_HEIGHT - 20);
 	}
 
 	private void drawTitle(Graphics2D graphics, String title) {
@@ -56,7 +66,6 @@ public class ImageService {
 		for (int i = 0; i < wrappedText.size(); i++) {
 			graphics.drawString(wrappedText.get(i), 25, BOX_HEIGHT + 30 + (i * lineHeight));
 		}
-		graphics.dispose();
 	}
 
 	private void drawThumbnail(Graphics2D graphics, BufferedImage originalImage) {
