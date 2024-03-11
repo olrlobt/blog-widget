@@ -30,14 +30,15 @@ public class PostingApi {
 	public ResponseEntity<byte[]> getPosting(@RequestParam String blogName, @PathVariable int index) throws IOException {
 		log.info(blogName);
 		Posting posting = postingService.posting(blogName, index);
+		byte[] imageBox = imageService.getImageBox(posting);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setCacheControl("no-cache");
-		return new ResponseEntity<>(imageService.getImageBox(posting), headers, HttpStatus.OK);
+		return new ResponseEntity<>(imageBox, headers, HttpStatus.OK);
 	}
-	@GetMapping("/link")
-	public RedirectView redirectToExternal() {
-		return new RedirectView("https://www.google.com");
+	@GetMapping("/api/posting-link/{index}")
+	public RedirectView getPostingLink(@RequestParam String blogName, @PathVariable int index) throws IOException {
+		return postingService.getPostingLink(blogName, index);
 	}
 
 }
