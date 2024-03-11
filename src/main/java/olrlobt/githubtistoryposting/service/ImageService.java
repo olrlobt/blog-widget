@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 import org.springframework.stereotype.Service;
 
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.domain.Postings;
 import olrlobt.githubtistoryposting.utils.CreateImgFile;
 import olrlobt.githubtistoryposting.utils.TextUtils;
 
@@ -24,24 +23,15 @@ public class ImageService {
 	private final int BOX_HEIGHT = 126;
 	private final int TOTAL_HEIGHT = 260;
 
-	public byte[] getImageBox(Postings postings) throws IOException {
-
-		// File outputDir = new File("src/main/resources/static/img/");
-		// outputDir.mkdirs();
-		// File outputFile = new File(outputDir, 1 + "generated_image.png");
-		BufferedImage imageBox = null;
-		int count = 1;
-		for (Posting posting : postings.getPostings()) {
-			File tempImg = CreateImgFile.fromUrl(posting.getThumbnail());
-			imageBox = makeImageBox(tempImg, count++, posting);
-		}
+	public byte[] getImageBox(Posting posting) throws IOException {
+		File tempImg = CreateImgFile.fromUrl(posting.getThumbnail());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(imageBox, "png", baos);
+		ImageIO.write(makeImageBox(tempImg, posting), "png", baos);
 		return baos.toByteArray();
 	}
 
-	private BufferedImage makeImageBox(File tempImg, int count, Posting posting) throws IOException {
+	private BufferedImage makeImageBox(File tempImg, Posting posting) throws IOException {
 		BufferedImage originalImage = ImageIO.read(tempImg);
 		BufferedImage imageBox = new BufferedImage(BOX_WIDTH, TOTAL_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = imageBox.createGraphics();
