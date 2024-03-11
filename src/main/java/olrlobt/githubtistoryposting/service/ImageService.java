@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.utils.CreateImgFile;
+import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.TextUtils;
 
 @Service
@@ -56,7 +57,7 @@ public class ImageService {
 	private void drawDate(Graphics2D graphics, LocalDate date) {
 		String createdAt = TextUtils.ofLocalDate(date);
 		graphics.setColor(Color.GRAY);
-		graphics.setFont(new Font("Noto Sans Regular", Font.PLAIN, 11));
+		graphics.setFont(FontUtils.load_m());
 
 		graphics.drawString(createdAt, 25, TOTAL_HEIGHT - 20);
 	}
@@ -64,7 +65,7 @@ public class ImageService {
 	private void drawTitle(Graphics2D graphics, String title) {
 		graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 		graphics.setColor(Color.BLACK);
-		graphics.setFont(new Font("Noto Sans Regular", Font.BOLD, 14));
+		graphics.setFont(FontUtils.load_b());
 
 		List<String> wrappedText = TextUtils.wrap(graphics, title, 167, 3);
 		int lineHeight = graphics.getFontMetrics().getHeight();
