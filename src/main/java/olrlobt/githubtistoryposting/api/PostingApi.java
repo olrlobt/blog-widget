@@ -2,6 +2,9 @@ package olrlobt.githubtistoryposting.api;
 
 import java.io.IOException;
 
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.service.ImageService;
 import olrlobt.githubtistoryposting.service.PostingService;
+import olrlobt.githubtistoryposting.service.ScrapingService;
 
 @Slf4j
 @RestController
@@ -26,19 +30,19 @@ public class PostingApi {
 	private final PostingService postingService;
 	private final ImageService imageService;
 
-	@GetMapping(value = "/api/posting/{index}", produces = MediaType.IMAGE_PNG_VALUE)
+	@GetMapping("/api/posting/{index}")
 	public ResponseEntity<byte[]> getPosting(@RequestParam String blogName, @PathVariable int index) throws IOException {
-		log.info(blogName);
 		Posting posting = postingService.posting(blogName, index);
-		byte[] imageBox = imageService.getImageBox(posting);
+		byte[] svgImageBox = imageService.createSvgImageBox(posting);
 
 		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.valueOf("image/svg+xml"));
 		headers.setCacheControl("no-cache");
-		return new ResponseEntity<>(imageBox, headers, HttpStatus.OK);
+		return new ResponseEntity<>(svgImageBox, headers, HttpStatus.OK);
 	}
+
 	@GetMapping("/api/posting-link/{index}")
 	public RedirectView getPostingLink(@RequestParam String blogName, @PathVariable int index) throws IOException {
 		return postingService.getPostingLink(blogName, index);
 	}
-
 }

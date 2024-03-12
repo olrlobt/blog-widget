@@ -1,21 +1,19 @@
 package olrlobt.githubtistoryposting.service;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.stereotype.Service;
 
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.utils.CreateImgFile;
 import olrlobt.githubtistoryposting.utils.FontUtils;
-import olrlobt.githubtistoryposting.utils.TextUtils;
+import olrlobt.githubtistoryposting.utils.SvgUtils;
 
 @Service
 public class ImageService {
@@ -23,64 +21,49 @@ public class ImageService {
 	private final int BOX_WIDTH = 217;
 	private final int BOX_HEIGHT = 126;
 	private final int TOTAL_HEIGHT = 260;
+	private final int PADDING = 20;
+	private final int PADDING_TOP = 25;
+	private final int MAX_LINES = 3;
+	private final String TRUNCATE = "...";
+	private final Color STROKE_COLOR = Color.decode("#d0d7de");
 
-	public byte[] getImageBox(Posting posting) throws IOException {
-		File tempImg = CreateImgFile.fromUrl(posting.getThumbnail());
+	public byte[] createSvgImageBox(Posting posting) throws IOException {
+		SVGGraphics2D svgGenerator = SvgUtils.init();
+		svgGenerator.setSVGCanvasSize(new java.awt.Dimension(BOX_WIDTH, TOTAL_HEIGHT));
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(makeImageBox(tempImg, posting), "png", baos);
-		return baos.toByteArray();
+		drawBackground(svgGenerator);
+		drawThumbnail(posting, svgGenerator);
+		drawText(posting, svgGenerator);
+		drawStroke(svgGenerator);
+
+		return SvgUtils.toByte(svgGenerator);
 	}
 
-	private BufferedImage makeImageBox(File tempImg, Posting posting) throws IOException {
-		BufferedImage originalImage = ImageIO.read(tempImg);
-		BufferedImage imageBox = new BufferedImage(BOX_WIDTH, TOTAL_HEIGHT, BufferedImage.TYPE_INT_RGB);
-		Graphics2D graphics = imageBox.createGraphics();
-
-		drawThumbnail(graphics, originalImage);
-		drawStroke(graphics);
-		drawTitle(graphics, posting.getTitle());
-		drawDate(graphics, posting.getDate());
-
-		graphics.dispose();
-		return imageBox;
+	private void drawBackground(SVGGraphics2D svgGenerator) {
+		svgGenerator.setPaint(Color.WHITE);
+		svgGenerator.fill(new Rectangle2D.Double(0, 0, BOX_WIDTH, TOTAL_HEIGHT));
 	}
 
-	private void drawStroke(Graphics2D graphics) {
-		graphics.setColor(Color.decode("#d0d7de"));
-		Stroke oldStroke = graphics.getStroke();
-		graphics.setStroke(new BasicStroke(1));
-		graphics.drawRect(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1);
-		graphics.setStroke(oldStroke);
+	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator) throws IOException {
+		BufferedImage originalImage = ImageIO.read(new URL(posting.getThumbnail()));
+		BufferedImage resizedImage = resizeThumb(originalImage);
+		svgGenerator.drawImage(resizedImage, 0, 0, BOX_WIDTH, BOX_HEIGHT, null);
 	}
 
-	private void drawDate(Graphics2D graphics, LocalDate date) {
-		String createdAt = TextUtils.ofLocalDate(date);
-		graphics.setColor(Color.GRAY);
-		graphics.setFont(FontUtils.load_m());
-
-		graphics.drawString(createdAt, 25, TOTAL_HEIGHT - 20);
+	private void drawText(Posting posting, SVGGraphics2D svgGenerator) {
+		svgGenerator.setPaint(Color.BLACK);
+		drawMultilineText(svgGenerator, posting.getTitle(), PADDING, BOX_HEIGHT + PADDING_TOP, BOX_WIDTH - PADDING * 2,
+			MAX_LINES);
+		svgGenerator.setPaint(Color.GRAY);
+		svgGenerator.drawString(posting.getDate().toString(), PADDING, TOTAL_HEIGHT - PADDING);
 	}
 
-	private void drawTitle(Graphics2D graphics, String title) {
-		graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-		graphics.setColor(Color.BLACK);
-		graphics.setFont(FontUtils.load_b());
-
-		List<String> wrappedText = TextUtils.wrap(graphics, title, 167, 3);
-		int lineHeight = graphics.getFontMetrics().getHeight();
-		for (int i = 0; i < wrappedText.size(); i++) {
-			graphics.drawString(wrappedText.get(i), 25, BOX_HEIGHT + 30 + (i * lineHeight));
-		}
+	private void drawStroke(SVGGraphics2D svgGenerator) {
+		svgGenerator.setPaint(STROKE_COLOR);
+		svgGenerator.draw(new Rectangle2D.Double(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1));
 	}
 
-	private void drawThumbnail(Graphics2D graphics, BufferedImage originalImage) {
-		graphics.setColor(Color.WHITE);
-		graphics.fillRect(0, 0, BOX_WIDTH, TOTAL_HEIGHT);
-		graphics.drawImage(resizeThumb(originalImage, BOX_WIDTH, BOX_HEIGHT), 0, 0, null);
-	}
-
-	private BufferedImage resizeThumb(BufferedImage originalImage, int BOX_WIDTH, int BOX_HEIGHT) {
+	private BufferedImage resizeThumb(BufferedImage originalImage) {
 		double originalAspectRatio = (double)originalImage.getWidth() / originalImage.getHeight();
 		double boxAspectRatio = (double)BOX_WIDTH / BOX_HEIGHT;
 
@@ -96,5 +79,42 @@ public class ImageService {
 		int cropStartY = (targetHeight - BOX_HEIGHT) / 2;
 
 		return bufferedImage.getSubimage(cropStartX, cropStartY, BOX_WIDTH, BOX_HEIGHT);
+	}
+
+	public void drawMultilineText(SVGGraphics2D svgGenerator, String text, int x, int y, int maxWidth, int maxLines) {
+		Font font = FontUtils.load_b();
+		svgGenerator.setFont(font);
+		FontMetrics metrics = svgGenerator.getFontMetrics(font);
+
+		int lineHeight = metrics.getHeight();
+		int linesCount = 0;
+		StringBuilder currentLine = new StringBuilder();
+
+		for (char ch : text.toCharArray()) {
+			currentLine.append(ch);
+			String lineText = currentLine.toString();
+			double lineWidth = metrics.stringWidth(lineText);
+
+			if (lineWidth > maxWidth || text.indexOf(ch) == text.length() - 1) {
+				if (lineWidth <= maxWidth && linesCount < maxLines - 1) {
+					svgGenerator.drawString(lineText, x, y + linesCount * lineHeight);
+					return;
+				}
+
+				if (linesCount < maxLines) {
+					String toDraw = lineWidth > maxWidth ? lineText.substring(0, lineText.length() - 1) : lineText;
+					svgGenerator.drawString(toDraw, x, y + linesCount * lineHeight);
+					currentLine = lineWidth > maxWidth ? new StringBuilder("" + ch) : new StringBuilder();
+					linesCount++;
+				} else {
+					svgGenerator.drawString(TRUNCATE, x, y + linesCount * lineHeight);
+					return;
+				}
+			}
+		}
+
+		if (currentLine.length() > 0 && linesCount < maxLines) {
+			svgGenerator.drawString(currentLine.toString(), x, y + linesCount * lineHeight);
+		}
 	}
 }

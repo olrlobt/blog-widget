@@ -22,7 +22,7 @@ class DateParserTest {
 	@ParameterizedTest
 	@MethodSource("dateInputs")
 	void parser(String value) {
-		LocalDate result = DateParser.parser(value);
+		LocalDate result = DateUtils.parser(value);
 		assertThat(result).isEqualTo(LocalDate.of(2024, 3, 17));
 	}
 }

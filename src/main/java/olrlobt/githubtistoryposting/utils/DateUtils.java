@@ -10,7 +10,7 @@ import java.time.temporal.TemporalAccessor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DateParser {
+public class DateUtils {
 
 	public static LocalDate parser(String txtDate) {
 		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
@@ -32,5 +32,10 @@ public class DateParser {
 			log.error("날짜 파싱 에러: {}", txtDate);
 		}
 		return null;
+	}
+
+	public static String toString(LocalDate localDate){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+		return localDate.format(formatter);
 	}
 }

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.jsoup.nodes.Element;
 
 import lombok.Getter;
-import olrlobt.githubtistoryposting.utils.DateParser;
+import olrlobt.githubtistoryposting.utils.DateUtils;
 
 @Getter
 public class Posting {
@@ -19,7 +19,7 @@ public class Posting {
 		thumbnail = element.select("img")
 			.attr("src")
 			.split("=")[1];
-		date = DateParser.parser(element.select(".txt_date").text());
+		date = DateUtils.parser(element.select(".txt_date").text());
 	}
 
 	@Override
