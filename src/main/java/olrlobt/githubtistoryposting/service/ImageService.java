@@ -11,11 +11,13 @@ import javax.imageio.ImageIO;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.SvgUtils;
 
 @Service
+@Slf4j
 public class ImageService {
 
 	private final int BOX_WIDTH = 217;
@@ -30,7 +32,6 @@ public class ImageService {
 	public byte[] createSvgImageBox(Posting posting) throws IOException {
 		SVGGraphics2D svgGenerator = SvgUtils.init();
 		svgGenerator.setSVGCanvasSize(new java.awt.Dimension(BOX_WIDTH, TOTAL_HEIGHT));
-
 		drawBackground(svgGenerator);
 		drawThumbnail(posting, svgGenerator);
 		drawText(posting, svgGenerator);
@@ -46,8 +47,7 @@ public class ImageService {
 
 	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator) throws IOException {
 		BufferedImage originalImage = ImageIO.read(new URL(posting.getThumbnail()));
-		BufferedImage resizedImage = resizeThumb(originalImage);
-		svgGenerator.drawImage(resizedImage, 0, 0, BOX_WIDTH, BOX_HEIGHT, null);
+		svgGenerator.drawImage(originalImage, 0, 0, BOX_WIDTH, BOX_HEIGHT, null);
 	}
 
 	private void drawText(Posting posting, SVGGraphics2D svgGenerator) {
@@ -61,24 +61,6 @@ public class ImageService {
 	private void drawStroke(SVGGraphics2D svgGenerator) {
 		svgGenerator.setPaint(STROKE_COLOR);
 		svgGenerator.draw(new Rectangle2D.Double(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1));
-	}
-
-	private BufferedImage resizeThumb(BufferedImage originalImage) {
-		double originalAspectRatio = (double)originalImage.getWidth() / originalImage.getHeight();
-		double boxAspectRatio = (double)BOX_WIDTH / BOX_HEIGHT;
-
-		int targetWidth = originalAspectRatio > boxAspectRatio ? (int)(BOX_HEIGHT * originalAspectRatio) : BOX_WIDTH;
-		int targetHeight = originalAspectRatio <= boxAspectRatio ? (int)(BOX_WIDTH / originalAspectRatio) : BOX_HEIGHT;
-
-		BufferedImage bufferedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = bufferedImage.createGraphics();
-		g2d.drawImage(originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH), 0, 0, null);
-		g2d.dispose();
-
-		int cropStartX = (targetWidth - BOX_WIDTH) / 2;
-		int cropStartY = (targetHeight - BOX_HEIGHT) / 2;
-
-		return bufferedImage.getSubimage(cropStartX, cropStartY, BOX_WIDTH, BOX_HEIGHT);
 	}
 
 	public void drawMultilineText(SVGGraphics2D svgGenerator, String text, int x, int y, int maxWidth, int maxLines) {

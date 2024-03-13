@@ -2,9 +2,6 @@ package olrlobt.githubtistoryposting.api;
 
 import java.io.IOException;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.service.ImageService;
 import olrlobt.githubtistoryposting.service.PostingService;
-import olrlobt.githubtistoryposting.service.ScrapingService;
 
 @Slf4j
 @RestController

@@ -14,7 +14,7 @@ import olrlobt.githubtistoryposting.utils.CreateBlogUrl;
 @Slf4j
 public class ScrapingService {
 
-	@Cacheable(cacheNames = "blog", key = "#blogName", sync = true)
+	@Cacheable(cacheNames = "blog", key = "#blogName", sync = false)
 	public Document scrapingBlog(String blogName) throws IOException {
 		log.info("Scraping blog: {}", blogName);
 		return Jsoup.connect(CreateBlogUrl.tistory(blogName)).get();

@@ -16,9 +16,15 @@ public class Posting {
 
 	public Posting(Element element) {
 		title = element.select(".tit_post ").text();
-		thumbnail = element.select("img")
+
+		String[] split = element.select("img")
 			.attr("src")
-			.split("=")[1];
+			.split("/\\?");
+
+		String[] split1 = split[0].split("C");
+		String s = split1[0] + "C217x122";
+
+		thumbnail = "https:" + s + "/?" + split[1];
 		date = DateUtils.parser(element.select(".txt_date").text());
 	}
 
