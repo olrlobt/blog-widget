@@ -3,6 +3,7 @@ package olrlobt.githubtistoryposting.domain;
 import java.time.LocalDate;
 
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import lombok.Getter;
 import olrlobt.githubtistoryposting.utils.DateUtils;
@@ -17,15 +18,25 @@ public class Posting {
 	public Posting(Element element) {
 		title = element.select(".tit_post ").text();
 
-		String[] split = element.select("img")
-			.attr("src")
-			.split("/\\?");
+		String thumb = null;
+		Elements select = element.select("img");
+		if (!select.isEmpty()) {
+			String[] split = select
+				.attr("src")
+				.split("/\\?");
 
-		String[] split1 = split[0].split("C");
-		String s = split1[0] + "C217x122";
+			String img217x122 = split[0].split("C")[0] + "C217x122";
+			thumb = "https:" + img217x122 + "/?" + split[1];
+		}
+		thumbnail = thumb;
 
-		thumbnail = "https:" + s + "/?" + split[1];
 		date = DateUtils.parser(element.select(".txt_date").text());
+	}
+
+	public Posting() {
+		this.title = "포스팅이 존재하지 않습니다.";
+		this.thumbnail = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
+		this.date = LocalDate.of(9999, 12, 31);
 	}
 
 	@Override

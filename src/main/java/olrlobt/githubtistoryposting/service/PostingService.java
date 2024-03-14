@@ -24,8 +24,18 @@ public class PostingService {
 		return findPostingInfo(document, index);
 	}
 
-	private Posting findPostingInfo(Document document, int index) {
+	private Posting findPostingInfo(Document document, int index) throws IOException {
+		int page = 1;
 		Elements select = document.select(".list_content");
+		while (select.size() <= index && !select.isEmpty()) {
+			index -= select.size();
+			document = scrapingService.scrapingBlog(document.location(), ++page);
+			select = document.select(".list_content");
+		}
+
+		if (index >= select.size()) {
+			return new Posting();
+		}
 		return new Posting(select.get(index));
 	}
 

@@ -19,4 +19,9 @@ public class ScrapingService {
 		log.info("Scraping blog: {}", blogName);
 		return Jsoup.connect(CreateBlogUrl.tistory(blogName)).get();
 	}
+
+	@Cacheable(cacheNames = "blog", key = "#url.concat('-').concat(#page)", sync = true)
+	public Document scrapingBlog(String url, int page) throws IOException {
+		return Jsoup.connect(CreateBlogUrl.tistory(url, page)).get();
+	}
 }

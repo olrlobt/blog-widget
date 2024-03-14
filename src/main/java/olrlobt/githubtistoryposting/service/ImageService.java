@@ -46,8 +46,10 @@ public class ImageService {
 	}
 
 	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator) throws IOException {
-		BufferedImage originalImage = ImageIO.read(new URL(posting.getThumbnail()));
-		svgGenerator.drawImage(originalImage, 0, 0, BOX_WIDTH, BOX_HEIGHT, null);
+		if (posting.getThumbnail() != null) {
+			BufferedImage originalImage = ImageIO.read(new URL(posting.getThumbnail()));
+			svgGenerator.drawImage(originalImage, 0, 0, BOX_WIDTH, BOX_HEIGHT, null);
+		}
 	}
 
 	private void drawText(Posting posting, SVGGraphics2D svgGenerator) {
