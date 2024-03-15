@@ -14,7 +14,7 @@ class CreateBlogUrlTest {
 		//given
 		String name = "olrlobt";
 		//when
-		String blogUrl = CreateBlogUrl.tistory(name);
+		String blogUrl = UrlUtils.createTistoryUrl(name);
 		//then
 		assertThat(blogUrl).isEqualTo("https://olrlobt.tistory.com");
 	}

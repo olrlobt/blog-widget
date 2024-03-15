@@ -1,8 +1,10 @@
 package olrlobt.githubtistoryposting.service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.view.RedirectView;
@@ -10,7 +12,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.utils.CreateBlogUrl;
+import olrlobt.githubtistoryposting.utils.DateUtils;
+import olrlobt.githubtistoryposting.utils.UrlUtils;
 
 @Slf4j
 @Service
@@ -21,39 +24,60 @@ public class PostingService {
 
 	public Posting posting(String blogName, int index) throws IOException {
 		Document document = scrapingService.scrapingBlog(blogName);
-		return findPostingInfo(document, index);
+		return makePostingInfo(document, index);
 	}
 
-	private Posting findPostingInfo(Document document, int index) throws IOException {
+	private Posting makePostingInfo(Document document, int index) throws IOException {
 		int page = 1;
-		Elements select = document.select(".list_content");
-		while (select.size() <= index && !select.isEmpty()) {
-			index -= select.size();
+		Elements postings = document.select(BlogTag.TISTORY.getPostingList());
+		while (postings.size() <= index && !postings.isEmpty()) {
+			index -= postings.size();
 			document = scrapingService.scrapingBlog(document.location(), ++page);
-			select = document.select(".list_content");
+			postings = document.select(BlogTag.TISTORY.getPostingList());
 		}
 
-		if (index >= select.size()) {
-			return new Posting();
+		if (index >= postings.size()) {
+			return Posting.createNoPosting();
 		}
-		return new Posting(select.get(index));
+
+		Element posting = postings.get(index);
+
+		String thumb = null;
+		Element first = posting.select(BlogTag.TISTORY.getPostingThumb()).first();
+		if (first != null) {
+			String src = first.attr("src");
+			thumb = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSize());
+			thumb = UrlUtils.addProtocol(thumb);
+		}
+		String thumbnail = thumb;
+
+		String title = posting.select(BlogTag.TISTORY.getPostingTitle()).text();
+		LocalDate parser = DateUtils.parser(posting.select(BlogTag.TISTORY.getPostingDate()).text());
+		String footer = DateUtils.toString(parser);
+
+		return new Posting(thumbnail, title, footer);
 	}
 
 	public RedirectView getPostingLink(String blogName, int index) throws IOException {
 		Document document = scrapingService.scrapingBlog(blogName);
-		String attr = document.select(".list_content")
+		String attr = document.select(BlogTag.TISTORY.getPostingLink())
 			.get(index)
-			.select("a")
 			.attr("href");
 
-		return new RedirectView(CreateBlogUrl.of(blogName, attr));
+		return new RedirectView(UrlUtils.of(blogName, attr));
 	}
 
 	public Posting getPostingInfo(String blogName) throws IOException {
 		Document document = scrapingService.scrapingBlog(blogName);
-		Elements select = document.select("head");
-		Posting thumbnailBox = Posting.createThumbnailBox(select);
 
-		return thumbnailBox;
+		String originalThumb = document.select(BlogTag.TISTORY.getBlogThumb())
+			.attr("content");
+		String resizeThumbnail = UrlUtils.changeThumbnailSize(originalThumb, ImageSize.TistoryBlog.getSize());
+		String title = document.select(BlogTag.TISTORY.getBlogName())
+			.attr("content");
+		String footer = document.select(BlogTag.TISTORY.getBlogUrl())
+			.attr("content");
+
+		return new Posting(resizeThumbnail, title, footer);
 	}
 }
