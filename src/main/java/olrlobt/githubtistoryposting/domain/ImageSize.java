@@ -1,4 +1,4 @@
-package olrlobt.githubtistoryposting.service;
+package olrlobt.githubtistoryposting.domain;
 
 import lombok.Getter;
 

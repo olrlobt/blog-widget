@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.SvgUtils;
 
@@ -29,12 +30,12 @@ public class ImageService {
 	private final String TRUNCATE = "...";
 	private final Color STROKE_COLOR = Color.decode("#d0d7de");
 
-	public byte[] createSvgImageBox(Posting posting) throws IOException {
+	public byte[] createSvgImageBox(Posting posting, PostingType postingType) throws IOException {
 		SVGGraphics2D svgGenerator = SvgUtils.init();
 		svgGenerator.setSVGCanvasSize(new java.awt.Dimension(BOX_WIDTH, TOTAL_HEIGHT));
 		drawBackground(svgGenerator);
-		drawThumbnail(posting, svgGenerator);
-		drawText(posting, svgGenerator);
+		drawThumbnail(posting, svgGenerator, postingType);
+		drawText(posting, svgGenerator, postingType);
 		drawStroke(svgGenerator);
 
 		return SvgUtils.toByte(svgGenerator);
@@ -45,17 +46,19 @@ public class ImageService {
 		svgGenerator.fill(new Rectangle2D.Double(0, 0, BOX_WIDTH, TOTAL_HEIGHT));
 	}
 
-	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator) throws IOException {
+	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) throws IOException {
 		if (posting.getThumbnail() != null) {
 			BufferedImage originalImage = ImageIO.read(new URL(posting.getThumbnail()));
-			svgGenerator.drawImage(originalImage, 0, 0, BOX_WIDTH, BOX_HEIGHT, null);
+			svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
 		}
 	}
 
-	private void drawText(Posting posting, SVGGraphics2D svgGenerator) {
+	private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
 		svgGenerator.setPaint(Color.BLACK);
-		drawMultilineText(svgGenerator, posting.getTitle(), PADDING, BOX_HEIGHT + PADDING_TOP, BOX_WIDTH - PADDING * 2,
-			MAX_LINES);
+		if (postingType.getStartText() >= 0) {
+			drawMultilineText(svgGenerator, posting.getTitle(), PADDING, postingType.getStartText() + PADDING_TOP, postingType.getWidth() - PADDING * 2,
+				MAX_LINES);
+		}
 		svgGenerator.setPaint(Color.GRAY);
 		svgGenerator.drawString(posting.getFooter(), PADDING, TOTAL_HEIGHT - PADDING);
 	}

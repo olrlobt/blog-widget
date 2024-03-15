@@ -15,6 +15,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.service.ImageService;
 import olrlobt.githubtistoryposting.service.PostingService;
 
@@ -29,7 +30,7 @@ public class PostingApi {
 	@GetMapping("/api/posting/{index}")
 	public ResponseEntity<byte[]> getPosting(@RequestParam String blogName, @PathVariable int index) throws IOException {
 		Posting posting = postingService.posting(blogName, index);
-		byte[] svgImageBox = imageService.createSvgImageBox(posting);
+		byte[] svgImageBox = imageService.createSvgImageBox(posting, PostingType.BlogPosting);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf("image/svg+xml"));
@@ -45,7 +46,7 @@ public class PostingApi {
 	@GetMapping("/api/posting-info")
 	public ResponseEntity<byte[]> getPostingInfo(@RequestParam String blogName) throws IOException {
 		Posting postingInfo = postingService.getPostingInfo(blogName);
-		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
+		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo, PostingType.BlogInfo);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf("image/svg+xml"));
