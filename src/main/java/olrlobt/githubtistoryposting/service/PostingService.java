@@ -24,22 +24,28 @@ public class PostingService {
 
 	public Posting posting(String blogName, int index) throws IOException {
 		Document document = scrapingService.scrapingBlog(blogName);
-		return makePostingInfo(document, index);
+		return findPosting(document, index);
 	}
 
-	private Posting makePostingInfo(Document document, int index) throws IOException {
+	private Posting findPosting(Document document, int index) throws IOException {
 		int page = 1;
 		Elements postings = document.select(BlogTag.TISTORY.getPostingList());
-		while (postings.size() <= index && !postings.isEmpty()) {
-			index -= postings.size();
-			document = scrapingService.scrapingBlog(document.location(), ++page);
-			postings = document.select(BlogTag.TISTORY.getPostingList());
+		int postingNumOfPage = postings.size();
+
+		while (postingNumOfPage <= index && !postings.isEmpty()){
+			index -= postingNumOfPage;
+			page++;
 		}
+		document = scrapingService.scrapingBlog(document.location(), page);
+		postings = document.select(BlogTag.TISTORY.getPostingList());
 
 		if (index >= postings.size()) {
 			return Posting.createNoPosting();
 		}
+		return makePosting(index, postings);
+	}
 
+	private static Posting makePosting(int index, Elements postings) {
 		Element posting = postings.get(index);
 
 		String thumb = null;
@@ -53,9 +59,7 @@ public class PostingService {
 
 		String title = posting.select(BlogTag.TISTORY.getPostingTitle()).text();
 		LocalDate parser = DateUtils.parser(posting.select(BlogTag.TISTORY.getPostingDate()).text());
-		String footer = DateUtils.toString(parser);
-
-		return new Posting(thumbnail, title, footer);
+		return new Posting(thumbnail, title, parser);
 	}
 
 	public RedirectView getPostingLink(String blogName, int index) throws IOException {
