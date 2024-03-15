@@ -48,4 +48,12 @@ public class PostingService {
 
 		return new RedirectView(CreateBlogUrl.of(blogName, attr));
 	}
+
+	public Posting getPostingInfo(String blogName) throws IOException {
+		Document document = scrapingService.scrapingBlog(blogName);
+		Elements select = document.select("head");
+		Posting thumbnailBox = Posting.createThumbnailBox(select);
+
+		return thumbnailBox;
+	}
 }

@@ -57,7 +57,7 @@ public class ImageService {
 		drawMultilineText(svgGenerator, posting.getTitle(), PADDING, BOX_HEIGHT + PADDING_TOP, BOX_WIDTH - PADDING * 2,
 			MAX_LINES);
 		svgGenerator.setPaint(Color.GRAY);
-		svgGenerator.drawString(posting.getDate().toString(), PADDING, TOTAL_HEIGHT - PADDING);
+		svgGenerator.drawString(posting.getFooter().toString(), PADDING, TOTAL_HEIGHT - PADDING);
 	}
 
 	private void drawStroke(SVGGraphics2D svgGenerator) {

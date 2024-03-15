@@ -41,4 +41,15 @@ public class PostingApi {
 	public RedirectView getPostingLink(@RequestParam String blogName, @PathVariable int index) throws IOException {
 		return postingService.getPostingLink(blogName, index);
 	}
+
+	@GetMapping("/api/posting-info")
+	public ResponseEntity<byte[]> getPostingInfo(@RequestParam String blogName) throws IOException {
+		Posting postingInfo = postingService.getPostingInfo(blogName);
+		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.valueOf("image/svg+xml"));
+		headers.setCacheControl("no-cache");
+		return new ResponseEntity<>(svgImageBox, headers, HttpStatus.OK);
+	}
 }
