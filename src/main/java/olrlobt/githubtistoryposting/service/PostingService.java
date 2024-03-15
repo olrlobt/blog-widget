@@ -29,20 +29,13 @@ public class PostingService {
 
 	private Posting findPosting(Document document, int index) throws IOException {
 		int page = 1;
-		Elements postings = document.select(BlogTag.TISTORY.getPostingList());
-		int postingNumOfPage = postings.size();
+		DocumentCurrent current = getCurrentDocument(index, document, page, BlogTag.TISTORY.getPostingList());
+		Elements postings = current.document.select(BlogTag.TISTORY.getPostingList());
 
-		while (postingNumOfPage <= index && !postings.isEmpty()){
-			index -= postingNumOfPage;
-			page++;
-		}
-		document = scrapingService.scrapingBlog(document.location(), page);
-		postings = document.select(BlogTag.TISTORY.getPostingList());
-
-		if (index >= postings.size()) {
+		if (current.index >= postings.size()) {
 			return Posting.createNoPosting();
 		}
-		return makePosting(index, postings);
+		return makePosting(current.index, postings);
 	}
 
 	private static Posting makePosting(int index, Elements postings) {
@@ -64,7 +57,24 @@ public class PostingService {
 	public RedirectView getPostingLink(String blogName, int index) throws IOException {
 		int page = 1;
 		Document document = scrapingService.scrapingBlog(blogName);
-		Elements postings = document.select(BlogTag.TISTORY.getPostingLink());
+		DocumentCurrent current = getCurrentDocument(index, document, page, BlogTag.TISTORY.getPostingLink());
+		Elements postings;
+		postings = current.document.select(BlogTag.TISTORY.getPostingLink());
+
+		if (current.index >= postings.size()) {
+			String url = current.document.select(BlogTag.TISTORY.getBlogUrl())
+				.attr("content");
+			return new RedirectView(url);
+		}
+		String postingParam = postings
+			.get(current.index)
+			.attr("href");
+
+		return new RedirectView(UrlUtils.of(blogName, postingParam));
+	}
+
+	private DocumentCurrent getCurrentDocument(int index, Document document, int page, String postingLink) throws IOException {
+		Elements postings = document.select(postingLink);
 
 		int postingNumOfPage = postings.size();
 
@@ -74,18 +84,10 @@ public class PostingService {
 		}
 
 		document = scrapingService.scrapingBlog(document.location(), page);
-		postings = document.select(BlogTag.TISTORY.getPostingLink());
+		return new DocumentCurrent(index, document);
+	}
 
-		log.info("========= {}" , postings.toString());
-		if (index >= postings.size()) {
-			// 에러
-		}
-		String postingParam = postings
-			.get(index)
-			.attr("href");
-
-		log.info("============= {} ", postingParam);
-		return new RedirectView(UrlUtils.of(blogName, postingParam));
+	private record DocumentCurrent(int index, Document document) {
 	}
 
 	public Posting getPostingInfo(String blogName) throws IOException {
