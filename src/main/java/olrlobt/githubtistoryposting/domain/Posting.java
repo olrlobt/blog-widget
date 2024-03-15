@@ -22,7 +22,7 @@ public class Posting {
 
 	public static Posting createNoPosting() {
 		String thumbnail = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
-		String title = "포스팅이 존재하지 않습니다.";
+		String title = "포스팅을 찾을 수 없습니다.";
 		String footer = "-";
 		return new Posting(thumbnail, title, footer);
 	}

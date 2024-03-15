@@ -48,14 +48,13 @@ public class PostingService {
 	private static Posting makePosting(int index, Elements postings) {
 		Element posting = postings.get(index);
 
-		String thumb = null;
+		String thumbnail = null;
 		Element first = posting.select(BlogTag.TISTORY.getPostingThumb()).first();
 		if (first != null) {
 			String src = first.attr("src");
-			thumb = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSize());
-			thumb = UrlUtils.addProtocol(thumb);
+			thumbnail = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSizeParam());
+			thumbnail = UrlUtils.addProtocol(thumbnail);
 		}
-		String thumbnail = thumb;
 
 		String title = posting.select(BlogTag.TISTORY.getPostingTitle()).text();
 		LocalDate parser = DateUtils.parser(posting.select(BlogTag.TISTORY.getPostingDate()).text());
@@ -63,12 +62,30 @@ public class PostingService {
 	}
 
 	public RedirectView getPostingLink(String blogName, int index) throws IOException {
+		int page = 1;
 		Document document = scrapingService.scrapingBlog(blogName);
-		String attr = document.select(BlogTag.TISTORY.getPostingLink())
+		Elements postings = document.select(BlogTag.TISTORY.getPostingLink());
+
+		int postingNumOfPage = postings.size();
+
+		while (postingNumOfPage <= index && !postings.isEmpty()){
+			index -= postingNumOfPage;
+			page++;
+		}
+
+		document = scrapingService.scrapingBlog(document.location(), page);
+		postings = document.select(BlogTag.TISTORY.getPostingLink());
+
+		log.info("========= {}" , postings.toString());
+		if (index >= postings.size()) {
+			// 에러
+		}
+		String postingParam = postings
 			.get(index)
 			.attr("href");
 
-		return new RedirectView(UrlUtils.of(blogName, attr));
+		log.info("============= {} ", postingParam);
+		return new RedirectView(UrlUtils.of(blogName, postingParam));
 	}
 
 	public Posting getPostingInfo(String blogName) throws IOException {
@@ -76,7 +93,7 @@ public class PostingService {
 
 		String originalThumb = document.select(BlogTag.TISTORY.getBlogThumb())
 			.attr("content");
-		String resizeThumbnail = UrlUtils.changeThumbnailSize(originalThumb, ImageSize.TistoryBlog.getSize());
+		String resizeThumbnail = UrlUtils.changeThumbnailSize(originalThumb, ImageSize.TistoryBlog.getSizeParam());
 		String title = document.select(BlogTag.TISTORY.getBlogName())
 			.attr("content");
 		String footer = document.select(BlogTag.TISTORY.getBlogUrl())

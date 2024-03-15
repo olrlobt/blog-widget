@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum BlogTag {
 	TISTORY("head meta[property=og:image]", "head meta[property=og:site_name]", "head meta[property=og:url]", ".list_content",
-		".tit_post", ".txt_date", "img", ".list_content a");
+		".tit_post", ".txt_date", "img", ".list_content .link_post");
 
 	private final String blogThumb;
 	private final String blogName;
