@@ -15,6 +15,7 @@ public class DateUtils {
 	public static LocalDate parser(String txtDate) {
 		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy. M. d. HH:mm"))
+			.appendOptional(DateTimeFormatter.ofPattern("yyyy. M. d."))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy.M.d"))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d"))
 			.parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
