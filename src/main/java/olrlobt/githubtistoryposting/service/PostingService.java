@@ -46,7 +46,6 @@ public class PostingService {
 		Elements postings = current.document.select(theme.getPostingList());
 
 		if (current.index >= postings.size()) {
-			log.info("index = {} , postings.size() = {}", index,  postings.size());
 			return Posting.createNoPosting();
 		}
 		return makePosting(current.index, postings, theme);
@@ -56,11 +55,13 @@ public class PostingService {
 		Element posting = postings.get(index);
 
 		String thumbnail = null;
-		Element first = posting.select(theme.getPostingThumb()).first();
-		if (first != null) {
-			String src = first.attr("src");
-			thumbnail = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSizeParam());
-			thumbnail = UrlUtils.addProtocol(thumbnail);
+		Element thumb = posting.select(theme.getPostingThumb()).first();
+		if (thumb != null) {
+			String src = thumb.attr("src");
+			if(!src.isEmpty()) {
+				thumbnail = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSizeParam());
+				thumbnail = UrlUtils.addProtocol(thumbnail);
+			}
 		}
 
 		String title = posting.select(theme.getPostingTitle()).text();
@@ -90,16 +91,13 @@ public class PostingService {
 	}
 
 	private DocumentCurrent getCurrentDocument(int index, Document document, int page, String postingLink) throws IOException {
-		log.info("clawl {} " , postingLink);
 		Elements postings = document.select(postingLink);
-
 		int postingNumOfPage = postings.size();
 
 		while (postingNumOfPage <= index && !postings.isEmpty()){
 			index -= postingNumOfPage;
 			page++;
 		}
-
 		document = scrapingService.scrapingBlog(document.location(), page);
 		return new DocumentCurrent(index, document);
 	}

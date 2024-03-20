@@ -12,6 +12,7 @@ import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
+import olrlobt.githubtistoryposting.domain.BlogInfo;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.FontUtils;
@@ -46,10 +47,18 @@ public class ImageService {
 		svgGenerator.fill(new Rectangle2D.Double(0, 0, BOX_WIDTH, TOTAL_HEIGHT));
 	}
 
-	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) throws IOException {
+	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) throws
+		IOException {
 		if (posting.getThumbnail() != null) {
-			BufferedImage originalImage = ImageIO.read(new URL(posting.getThumbnail()));
-			svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
+			BufferedImage originalImage;
+			try {
+				originalImage = ImageIO.read(new URL(posting.getThumbnail()));
+				svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
+			} catch (IOException ignored){
+				log.error("요청 URL = {}", posting.getThumbnail());
+				originalImage = ImageIO.read(new URL(BlogInfo.NOT_FIND.getBlogThumb()));
+				svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
+			}
 		}
 	}
 

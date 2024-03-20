@@ -21,9 +21,9 @@ public class Posting {
 	}
 
 	public static Posting createNoPosting() {
-		String thumbnail = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
-		String title = "포스팅을 찾을 수 없습니다.";
-		String footer = "-";
+		String thumbnail = BlogInfo.NOT_FIND.getBlogThumb();
+		String title = BlogInfo.NOT_FIND.getBlogName();
+		String footer = BlogInfo.NOT_FIND.getBlogUrl();
 		return new Posting(thumbnail, title, footer);
 	}
 
