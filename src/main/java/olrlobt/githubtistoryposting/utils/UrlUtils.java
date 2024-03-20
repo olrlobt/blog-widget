@@ -22,6 +22,6 @@ public class UrlUtils {
 	}
 
 	public static String addProtocol(String url) {
-		return url.contains("https:") ? url : "https:" + url;
+		return url.substring(0, 6).contains("https:") ? url : "https:" + url;
 	}
 }

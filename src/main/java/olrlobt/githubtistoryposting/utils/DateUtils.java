@@ -37,6 +37,11 @@ public class DateUtils {
 
 	public static String toString(LocalDate localDate){
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-		return localDate.format(formatter);
+		try {
+			return localDate.format(formatter);
+		}catch (Exception ignored){
+			log.error("날짜 파싱 에러: {}", localDate);
+			return "0000.00.00";
+		}
 	}
 }
