@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,12 +27,29 @@ public class DateUtils {
 		try {
 			TemporalAccessor ta = formatter.parseBest(txtDate, LocalDateTime::from, LocalDate::from);
 			if (ta instanceof LocalDateTime) {
-				return ((LocalDateTime)ta).toLocalDate();
+				return ((LocalDateTime) ta).toLocalDate();
 			} else if (ta instanceof LocalDate) {
-				return (LocalDate)ta;
+				return (LocalDate) ta;
 			}
 		} catch (Exception e) {
-			log.error("날짜 파싱 에러: {}", txtDate);
+			String datePattern = "\\d{4}\\.\\s?\\d{1,2}\\.\\s?\\d{1,2}(?:\\.\\s?\\d{1,2}:\\d{2})?";
+			Pattern pattern = Pattern.compile(datePattern);
+			Matcher matcher = pattern.matcher(txtDate);
+			if (matcher.find()) {
+				String date = matcher.group();
+				try {
+					TemporalAccessor ta = formatter.parseBest(date, LocalDateTime::from, LocalDate::from);
+					if (ta instanceof LocalDateTime) {
+						return ((LocalDateTime) ta).toLocalDate();
+					} else if (ta instanceof LocalDate) {
+						return (LocalDate) ta;
+					}
+				} catch (Exception ex) {
+					log.error("날짜 파싱 에러: {}", date);
+				}
+			} else {
+				log.error("날짜 파싱 에러: {}", txtDate);
+			}
 		}
 		return null;
 	}

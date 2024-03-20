@@ -33,11 +33,14 @@ public class PostingService {
 	}
 
 	private BlogTag findTistoryTheme(Document document) {
-		String themeIndex = document.selectFirst("body").className();
+		String themeIndex = document.selectFirst("body").className().split(" ")[0];
 		if (themeIndex.isEmpty()) {
-			// todo. 클래스가 없는것들 다른 방법 사용해서 식별
+			themeIndex = document.selectFirst("html").id();
+			if (themeIndex.isEmpty()) {
+				themeIndex = document.selectFirst(".emph_t").text();
+			}
 		}
-		return BlogTag.findThemeByClassName(themeIndex);
+		return BlogTag.findTheme(themeIndex);
 	}
 
 	private Posting findPosting(Document document, int index, BlogTag theme) throws IOException {
@@ -57,10 +60,14 @@ public class PostingService {
 		String thumbnail = null;
 		Element thumb = posting.select(theme.getPostingThumb()).first();
 		if (thumb != null) {
+			log.info("thumb = {}" ,thumb);
 			String src = thumb.attr("src");
-			if(!src.isEmpty()) {
+			if (!src.isEmpty()) {
 				thumbnail = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSizeParam());
 				thumbnail = UrlUtils.addProtocol(thumbnail);
+			}else{
+				String dataSrc = thumb.attr("data-src").replace("amp;","");
+				thumbnail = dataSrc;
 			}
 		}
 
@@ -90,11 +97,12 @@ public class PostingService {
 		return new RedirectView(UrlUtils.of(blogName, postingParam));
 	}
 
-	private DocumentCurrent getCurrentDocument(int index, Document document, int page, String postingLink) throws IOException {
+	private DocumentCurrent getCurrentDocument(int index, Document document, int page, String postingLink) throws
+		IOException {
 		Elements postings = document.select(postingLink);
 		int postingNumOfPage = postings.size();
 
-		while (postingNumOfPage <= index && !postings.isEmpty()){
+		while (postingNumOfPage <= index && !postings.isEmpty()) {
 			index -= postingNumOfPage;
 			page++;
 		}
