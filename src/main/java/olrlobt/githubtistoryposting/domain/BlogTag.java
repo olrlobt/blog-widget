@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 public enum BlogTag {
-	Odyssey("headerslogundisplayon", "article", ".title", ".date", "img", ".article a"),
+	Odyssey("headerslogundisplayon", "article", ".title", ".date", "img", ".article-content .link-article"),
 	Poster("color-gray", ".post-item", ".title", ".excerpt", "img", ".post-item a"),
 	Whatever("layout-wide", ".post-item", ".title", ".excerpt", "img", ".post-item a"),
 	Letter("thema_aqua", ".article_content", ".title_post", ".date", ".thumbnail_post", ".article_content a"),
@@ -15,8 +15,8 @@ public enum BlogTag {
 	BookClub("layout-aside-right", ".post-item", ".title", ".date", "img", ".post-item a"),
 	Magazine("theme_red", ".link_thumb", ".txt_thumb", ".date", ".thumb_img", ".link_thumb a"),
 	TISTORY_2("kakao", ".list_content", ".tit_post", ".txt_date", "img", ".list_content .link_post"),
-	TISTORY_1("Tistory", ".list_content", ".tit_post", ".detail_info", "img", ".thumbnail_post a"),
-	HELLO("__hELLO", ".item", ".title a", ".date time", "img", ".title a"),
+	TISTORY_1("Tistory", ".list_content", ".tit_post", ".detail_info", "img", ".link_post"),
+	HELLO("__hELLO", ".item", ".title a", ".date time", "img", ".item .title a"),
 	;
 
 	private final String blogTheme;

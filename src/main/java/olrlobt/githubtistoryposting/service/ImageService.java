@@ -49,16 +49,17 @@ public class ImageService {
 
 	private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) throws
 		IOException {
-		if (posting.getThumbnail() != null) {
-			BufferedImage originalImage;
+		BufferedImage originalImage;
+		if (posting.getThumbnail() != null && !posting.getThumbnail().isEmpty()) {
 			try {
 				originalImage = ImageIO.read(new URL(posting.getThumbnail()));
 				svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
 			} catch (IOException ignored){
 				log.error("요청 URL = {}", posting.getThumbnail());
-				originalImage = ImageIO.read(new URL(BlogInfo.NOT_FIND.getBlogThumb()));
-				svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
 			}
+		}else {
+			originalImage = ImageIO.read(new URL(BlogInfo.NOT_FIND.getBlogThumb()));
+			svgGenerator.drawImage(originalImage, 0, 0, postingType.getWidth(), postingType.getHeight(), null);
 		}
 	}
 

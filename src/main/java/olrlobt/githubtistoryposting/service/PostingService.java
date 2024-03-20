@@ -60,14 +60,12 @@ public class PostingService {
 		String thumbnail = null;
 		Element thumb = posting.select(theme.getPostingThumb()).first();
 		if (thumb != null) {
-			log.info("thumb = {}" ,thumb);
 			String src = thumb.attr("src");
 			if (!src.isEmpty()) {
 				thumbnail = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSizeParam());
 				thumbnail = UrlUtils.addProtocol(thumbnail);
 			}else{
-				String dataSrc = thumb.attr("data-src").replace("amp;","");
-				thumbnail = dataSrc;
+				thumbnail = thumb.attr("data-src").replace("amp;","");
 			}
 		}
 
@@ -82,9 +80,7 @@ public class PostingService {
 		BlogTag theme = findTistoryTheme(document);
 
 		DocumentCurrent current = getCurrentDocument(index, document, page, theme.getPostingLink());
-		Elements postings;
-		postings = current.document.select(theme.getPostingLink());
-
+		Elements postings = current.document.select(theme.getPostingLink());
 		if (current.index >= postings.size()) {
 			String url = current.document.select(BlogInfo.TISTORY.getBlogUrl())
 				.attr("content");
