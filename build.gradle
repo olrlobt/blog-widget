@@ -26,12 +26,10 @@ dependencies {
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.17'
-    implementation group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.17'
     implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.3.1'
     implementation group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.17'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '3.2.1'
-
-    implementation 'org.apache.xmlgraphics:batik-anim:1.17'
+    implementation group: 'org.springframework', name: 'spring-webflux', version: '6.1.5'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

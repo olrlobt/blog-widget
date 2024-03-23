@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.service.platform.Tistory;
+import olrlobt.githubtistoryposting.service.platform.Velog;
 
 @Slf4j
 @Service
@@ -16,9 +17,11 @@ import olrlobt.githubtistoryposting.service.platform.Tistory;
 public class PostingService {
 
 	private final Tistory tistory;
+	private final Velog velog;
 
 	public Posting posting(String blogName, String platform, int index) throws IOException {
-		return tistory.posting(blogName, index);
+		// return tistory.posting(blogName, index);
+		return velog.posting(blogName, index);
 	}
 
 	public Posting getPostingInfo(String blogName, String platform) throws IOException {
