@@ -29,6 +29,7 @@ public class PostingService {
 	}
 
 	public RedirectView getPostingLink(String blogName, String platform, int index) throws IOException {
-		return tistory.link(blogName, index);
+		// return tistory.link(blogName, index);
+		return velog.link(blogName, index);
 	}
 }

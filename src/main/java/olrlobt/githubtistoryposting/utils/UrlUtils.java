@@ -1,5 +1,8 @@
 package olrlobt.githubtistoryposting.utils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 public class UrlUtils {
 
 	public static String createTistoryUrl(String blogName) {
@@ -24,4 +27,9 @@ public class UrlUtils {
 	public static String addProtocol(String url) {
 		return url.substring(0, 6).contains("https:") ? url : "https:" + url;
 	}
+
+	public static String encodeByKorean(String target){
+		return URLEncoder.encode(target, StandardCharsets.UTF_8);
+	}
+
 }

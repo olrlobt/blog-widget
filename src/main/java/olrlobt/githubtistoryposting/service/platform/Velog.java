@@ -1,6 +1,7 @@
 package olrlobt.githubtistoryposting.service.platform;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.utils.DateUtils;
+import olrlobt.githubtistoryposting.utils.UrlUtils;
 
 @Component
 public class Velog implements Blog {
@@ -42,12 +44,33 @@ public class Velog implements Blog {
 	}
 
 	@Override
-	public RedirectView link(String blogName, int index) throws IOException {
-		return null;
+	public RedirectView link(String blogName, int index) throws UnsupportedEncodingException {
+		String query = "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) { url_slug }}";
+
+		Map<String, Object> variables = Map.of(
+			"username", blogName,
+			"limit", index + 1
+		);
+
+		VelogResponse response = webClient.post()
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(Map.of("query", query, "variables", variables))
+			.retrieve()
+			.bodyToMono(VelogResponse.class)
+			.block();
+
+		VelogResponse.Post post = response.getData().getPosts().get(index);
+
+		String encodedUrlSlug = UrlUtils.encodeByKorean(post.getUrl_slug());
+		return new RedirectView(createVelog(blogName, encodedUrlSlug));
 	}
 
 	@Override
 	public Posting blog(String blogName) throws IOException {
 		return null;
+	}
+
+	private String createVelog(String blogName, String urlSlug){
+		return "https://velog.io/@" + blogName + "/" + urlSlug;
 	}
 }
