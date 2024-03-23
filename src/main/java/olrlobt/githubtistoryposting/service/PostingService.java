@@ -24,12 +24,13 @@ public class PostingService {
 		return velog.posting(blogName, index);
 	}
 
-	public Posting getPostingInfo(String blogName, String platform) throws IOException {
-		return tistory.blog(blogName);
-	}
-
 	public RedirectView getPostingLink(String blogName, String platform, int index) throws IOException {
 		// return tistory.link(blogName, index);
 		return velog.link(blogName, index);
+	}
+
+	public Posting getPostingInfo(String blogName, String platform) throws IOException {
+		// return tistory.blog(blogName);
+		return velog.blog(blogName);
 	}
 }

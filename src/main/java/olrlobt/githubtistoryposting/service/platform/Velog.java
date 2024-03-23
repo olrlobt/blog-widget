@@ -44,7 +44,7 @@ public class Velog implements Blog {
 	}
 
 	@Override
-	public RedirectView link(String blogName, int index) throws UnsupportedEncodingException {
+	public RedirectView link(String blogName, int index) {
 		String query = "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) { url_slug }}";
 
 		Map<String, Object> variables = Map.of(
@@ -66,8 +66,25 @@ public class Velog implements Blog {
 	}
 
 	@Override
-	public Posting blog(String blogName) throws IOException {
-		return null;
+	public Posting blog(String blogName) {
+		String query = "query User($username: String) {user(username: $username) { username profile {  thumbnail }}}";
+
+		Map<String, Object> variables = Map.of(
+			"username", blogName
+		);
+
+		VelogResponse user = webClient.post()
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(Map.of("query", query, "variables", variables))
+			.retrieve()
+			.bodyToMono(VelogResponse.class)
+			.block();
+
+		String username = user.getData().getUser().getUsername();
+		String thumbnail = user.getData().getUser().getProfile().getThumbnail();
+		String location = thumbnail.substring(0, thumbnail.lastIndexOf("/"));
+		String param = UrlUtils.encodeByKorean(thumbnail.substring(thumbnail.lastIndexOf("/")));
+		return new Posting(location + param, username, createVelog(blogName,""));
 	}
 
 	private String createVelog(String blogName, String urlSlug){

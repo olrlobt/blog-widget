@@ -11,6 +11,7 @@ public class VelogResponse {
 	@Getter
 	public static class Data {
 		private List<Post> posts;
+		private User user;
 	}
 
 	@Getter
