@@ -27,9 +27,11 @@ public class PostingApi {
 	private final PostingService postingService;
 	private final ImageService imageService;
 
-	@GetMapping("/api/posting/{index}")
-	public ResponseEntity<byte[]> getPosting(@RequestParam String blogName, @PathVariable int index) throws IOException {
-		Posting posting = postingService.posting(blogName, index);
+	@GetMapping("/api/{platform}/posting/{index}")
+	public ResponseEntity<byte[]> getPosting(@RequestParam String blogName,
+		@PathVariable String platform,
+		@PathVariable int index) throws IOException {
+		Posting posting = postingService.posting(blogName, platform, index);
 		byte[] svgImageBox = imageService.createSvgImageBox(posting, PostingType.BlogPosting);
 
 		HttpHeaders headers = new HttpHeaders();
@@ -38,14 +40,17 @@ public class PostingApi {
 		return new ResponseEntity<>(svgImageBox, headers, HttpStatus.OK);
 	}
 
-	@GetMapping("/api/posting-link/{index}")
-	public RedirectView getPostingLink(@RequestParam String blogName, @PathVariable int index) throws IOException {
-		return postingService.getPostingLink(blogName, index);
+	@GetMapping("/api/{platform}/posting-link/{index}")
+	public RedirectView getPostingLink(@RequestParam String blogName,
+		@PathVariable String platform,
+		@PathVariable int index) throws IOException {
+		return postingService.getPostingLink(blogName, platform, index);
 	}
 
-	@GetMapping("/api/posting-info")
-	public ResponseEntity<byte[]> getPostingInfo(@RequestParam String blogName) throws IOException {
-		Posting postingInfo = postingService.getPostingInfo(blogName);
+	@GetMapping("/api/{platform}/posting-info")
+	public ResponseEntity<byte[]> getPostingInfo(@RequestParam String blogName,
+		@PathVariable String platform) throws IOException {
+		Posting postingInfo = postingService.getPostingInfo(blogName, platform);
 		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo, PostingType.BlogInfo);
 
 		HttpHeaders headers = new HttpHeaders();
