@@ -1,9 +1,10 @@
 package olrlobt.githubtistoryposting.api;
 
+import static org.springframework.http.HttpStatus.*;
+
 import java.io.IOException;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,34 +29,35 @@ public class PostingApi {
 	private final ImageService imageService;
 
 	@GetMapping("/api/{platform}/posting/{index}")
-	public ResponseEntity<byte[]> getPosting(@RequestParam String blogName,
+	public ResponseEntity<byte[]> getPosting(@RequestParam String name,
 		@PathVariable String platform,
 		@PathVariable int index) throws IOException {
-		Posting posting = postingService.posting(blogName, platform, index);
+		Posting posting = postingService.posting(name, platform, index);
 		byte[] svgImageBox = imageService.createSvgImageBox(posting, PostingType.BlogPosting);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.valueOf("image/svg+xml"));
-		headers.setCacheControl("no-cache");
-		return new ResponseEntity<>(svgImageBox, headers, HttpStatus.OK);
+		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
 	}
 
-	@GetMapping("/api/{platform}/posting-link/{index}")
-	public RedirectView getPostingLink(@RequestParam String blogName,
+	@GetMapping("/api/{platform}/link/{index}")
+	public RedirectView getPostingLink(@RequestParam String name,
 		@PathVariable String platform,
 		@PathVariable int index) throws IOException {
-		return postingService.getPostingLink(blogName, platform, index);
+		return postingService.link(name, platform, index);
 	}
 
-	@GetMapping("/api/{platform}/posting-info")
-	public ResponseEntity<byte[]> getPostingInfo(@RequestParam String blogName,
+	@GetMapping("/api/{platform}/blog")
+	public ResponseEntity<byte[]> getBlogInfo(@RequestParam String name,
 		@PathVariable String platform) throws IOException {
-		Posting postingInfo = postingService.getPostingInfo(blogName, platform);
+		Posting postingInfo = postingService.blog(name, platform);
 		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo, PostingType.BlogInfo);
 
+		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
+	}
+
+	private static HttpHeaders setHeader() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf("image/svg+xml"));
 		headers.setCacheControl("no-cache");
-		return new ResponseEntity<>(svgImageBox, headers, HttpStatus.OK);
+		return headers;
 	}
 }

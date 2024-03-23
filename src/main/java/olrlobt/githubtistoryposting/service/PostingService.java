@@ -23,12 +23,12 @@ public class PostingService {
 		return blog.posting(blogName, index);
 	}
 
-	public RedirectView getPostingLink(String blogName, String platform, int index) throws IOException {
+	public RedirectView link(String blogName, String platform, int index) throws IOException {
 		Blog blog = blogFactory.getBlog(platform);
 		return blog.link(blogName, index);
 	}
 
-	public Posting getPostingInfo(String blogName, String platform) throws IOException {
+	public Posting blog(String blogName, String platform) throws IOException {
 		Blog blog = blogFactory.getBlog(platform);
 		return blog.blog(blogName);
 	}
