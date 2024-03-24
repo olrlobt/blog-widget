@@ -12,10 +12,10 @@
 어떤 식으로 보여지는지 [저의 깃허브 리드미](https://github.com/olrlobt)에서 바로 확인하실 수 있습니다! 
 
 
-[![블로그 정보](https://blogwidget.com/api/posting-info?blogName=olrlobt)](https://olrlobt.tistory.com/)
+[![olrlobt tistory](https://blogwidget.com/api/t/blog?name=olrlobt)](https://olrlobt.tistory.com/)
 
 
-<br>
+<br><br><br>
 
 ### 사용 화면 예시
 ![img.png](docs/240318capture.png)
@@ -25,44 +25,116 @@
 
 ## 시작하기
 
-> 현재 1개의 테마, 1개의 블로그, 2개의 테마에서 사용 가능합니다.
+> 현재 1개의 테마를 지원 중입니다.\
+> 2개의 블로그, 9개의 티스토리 테마에서 사용 가능합니다.\
+> 테마를 임의로 수정하였다면 사용이 불가능할 수 있습니다.
+> 
+> 이 외의 블로그, 링크들은 고정형식만 사용할 수 있습니다.
 
-- 사용 가능 테마 : Box
-- 사용 가능 블로그 : Tistory
-- 사용 가능 테마(Tistory) : 반응형#2, Blue Club
+- 사용 가능 테마 : Card
+- 사용 가능 블로그 : Tistory, Velog
+- 사용 가능 테마(Tistory) : 
+  - Odyssey
+  - Blue Club
+  - 반응형#1
+  - 반응형#2 
+  - Poster
+  - Whatever
+  - Letter
+  - Portfolio
+  - __hELLO
+
+<br>
+
+플랫폼 태그 :
+- Tistory - `t` , `tistory`
+- Velog - `v`, `velog`
 
 <br>
 
 ### 블로그 박스 위젯
 
-사용 방법 :
+해당 API를 호출하여, `markdown`에서 블로그를 쉽게 노출할 수 있습니다.
 
-```markdown
-[![블로그 정보](https://blogwidget.com/api/posting-info?blogName={$당신의 블로그 이름})]({$링크})
-[![블로그 정보](https://blogwidget.com/api/posting-info?blogName=olrlobt)](https://olrlobt.tistory.com/)
-```
 
-예시:
-
-[![블로그 정보](https://blogwidget.com/api/posting-info?blogName=olrlobt)](https://olrlobt.tistory.com/)
-
-<br>
-
-### 포스팅 박스 위젯
 
 사용 방법 :
 
 ```markdown
-[![게시물](https://blogwidget.com/api/posting/{$번호}?blogName={$당신의 블로그 이름})](https://blogwidget.com/api/posting-link/{$번호}?blogName={$당신의 블로그 이름})
-[![게시물](https://blogwidget.com/api/posting/0?blogName=olrlobt)](https://blogwidget.com/api/posting-link/0?blogName=olrlobt)
+[![블로그 정보](https://blogwidget.com/api/{$플랫폼}/blog?name={$당신의 블로그 이름})]({$링크})
+[![블로그 정보](https://blogwidget.com/api/t/blog?name=olrlobt)](https://olrlobt.tistory.com/)
 ```
 
 예시:
 
-[![게시물](https://blogwidget.com/api/posting/0?blogName=olrlobt)](https://blogwidget.com/api/posting-link/0?blogName=olrlobt)
+[![블로그 정보](https://blogwidget.com/api/t/blog?name=olrlobt)](https://olrlobt.tistory.com/)
+
+<br>
+
+### 포스팅 최신순 위젯
+
+해당 API를 호출하여, `markdown` 파일에서 포스팅을 쉽게 최신순으로 노출할 수 있습니다.
+
+
+사용 방법 :
+
+```markdown
+[![게시물](https://blogwidget.com/api/{$플랫폼}/posting/{$번호}?name={$당신의 블로그 이름})](https://blogwidget.com/api/{$플랫폼}/link/{$번호}?name={$당신의 블로그 이름})
+[![게시물](https://blogwidget.com/api/t/posting/0?name=olrlobt)](https://blogwidget.com/api/t/link/0?name=olrlobt)
+```
+
+예시:
+
+[![게시물](https://blogwidget.com/api/t/posting/0?name=olrlobt)](https://blogwidget.com/api/t/link/0?name=olrlobt)
 
 <br>
 <br>
+
+
+
+### 포스팅 고정 위젯
+
+해당 API를 호출하여, `markdown` 파일에서 포스팅을 쉽게 고정할 수 있습니다.\
+포스팅이 아니어도 어떤 웹 페이지도 위젯형식으로 고정이 가능합니다.
+
+사용 방법 :
+- 테마
+  - b : BIG
+  - none : defalut
+
+```markdown
+[![게시물](https://blogwidget.com/api/fix?theme={$테마}&url={$URL})]({$링크})
+[![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
+
+[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
+[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://naver.com/)](https://naver.com)
+```
+
+예시:
+
+[![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
+[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
+[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://naver.com/)](https://naver.com)
+
+<br>
+<br>
+
+
+
+
+
+
+
+---
+
+
+
+
+
+
+
+
+
 
 ## 개발 노트
 
@@ -72,6 +144,8 @@
 24/03/15 - 블로그 박스, 블로그 바로가기
 24/03/18 - Tistory 'Blue Club' 서비스
 24/03/19 - blogwidget.com 도메인 설정
+24/03/24 - Velog 지원
+24/03/24 - 포스팅 고정 위젯 추가
 ```
 
 <br>
@@ -80,11 +154,9 @@
 ## 추가 예정
 
 ```text
-Tistory 모든 테마 지원 예정
-Velog, Github.io, Naver Blog 지원 예정
+Github.io, Naver Blog 지원 예정
 여러가지 위젯 모양 지원 예정
 게시물 1개만 효과적으로 표기하는 방법 지원 예정
-
 ```
 
 
