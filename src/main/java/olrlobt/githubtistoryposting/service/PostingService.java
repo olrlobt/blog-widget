@@ -8,6 +8,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.service.platform.Anything;
 import olrlobt.githubtistoryposting.service.platform.Blog;
 import olrlobt.githubtistoryposting.service.platform.BlogFactory;
 
@@ -17,6 +18,7 @@ import olrlobt.githubtistoryposting.service.platform.BlogFactory;
 public class PostingService {
 
 	private final BlogFactory blogFactory;
+	private final Anything anything;
 
 	public Posting posting(String blogName, String platform, int index) throws IOException {
 		Blog blog = blogFactory.getBlog(platform);
@@ -31,5 +33,9 @@ public class PostingService {
 	public Posting blog(String blogName, String platform) throws IOException {
 		Blog blog = blogFactory.getBlog(platform);
 		return blog.blog(blogName);
+	}
+
+	public Posting anything(String url) throws IOException {
+		return anything.posting(url);
 	}
 }

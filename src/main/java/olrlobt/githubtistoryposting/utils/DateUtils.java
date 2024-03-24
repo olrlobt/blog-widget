@@ -22,16 +22,19 @@ public class DateUtils {
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy.M.d"))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d"))
 			.appendOptional(DateTimeFormatter.ISO_INSTANT) // velog
+			.appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME) // anyting-else
 			.parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
 			.parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
 			.toFormatter();
 
 		try {
-			TemporalAccessor ta = formatter.parseBest(txtDate, Instant::from, LocalDate::from, LocalDateTime::from);
+			TemporalAccessor ta = formatter.parseBest(txtDate, ZonedDateTime::from, Instant::from, LocalDate::from, LocalDateTime::from);
 
 			if (ta instanceof Instant) {
 				ZonedDateTime zdt = ((Instant)ta).atZone(ZoneId.systemDefault());
 				return zdt.toLocalDate();
+			} else if (ta instanceof ZonedDateTime) {
+				return ((ZonedDateTime) ta).toLocalDate();
 			} else if (ta instanceof LocalDateTime) {
 				return ((LocalDateTime)ta).toLocalDate();
 			} else if (ta instanceof LocalDate) {

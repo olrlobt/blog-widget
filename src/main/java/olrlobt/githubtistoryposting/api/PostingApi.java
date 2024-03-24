@@ -54,6 +54,14 @@ public class PostingApi {
 		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
 	}
 
+	@GetMapping("/api/fix")
+	public ResponseEntity<byte[]> getAnythingElse(@RequestParam String url) throws IOException {
+		Posting postingInfo = postingService.anything(url);
+		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo, PostingType.BlogPosting);
+
+		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
+	}
+
 	private static HttpHeaders setHeader() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf("image/svg+xml"));
