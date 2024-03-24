@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
 
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 
@@ -32,7 +33,7 @@ public class Velog implements Blog {
 
 		VelogResponse response = request(QUERY_POSTING, variables);
 		VelogResponse.Post post = response.getData().getPosts().get(index);
-		return new Posting(post.getThumbnail(), post.getTitle(), DateUtils.parser(post.getReleased_at()));
+		return new Posting(post.getThumbnail(), post.getTitle(), DateUtils.parser(post.getReleased_at()), PostingType.BlogPosting);
 	}
 
 	@Override
@@ -59,7 +60,7 @@ public class Velog implements Blog {
 		String thumbnail = user.getData().getUser().getProfile().getThumbnail();
 		String location = thumbnail.substring(0, thumbnail.lastIndexOf("/"));
 		String param = UrlUtils.encodeByKorean(thumbnail.substring(thumbnail.lastIndexOf("/")));
-		return new Posting(location + param, username, createVelog(blogName, ""));
+		return new Posting(location + param, username, createVelog(blogName, ""), PostingType.BlogInfo);
 	}
 
 	private VelogResponse request(String query, Map<String, Object> variables) {

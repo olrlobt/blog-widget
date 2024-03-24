@@ -31,12 +31,12 @@ public class ImageService {
 	private final String TRUNCATE = "...";
 	private final Color STROKE_COLOR = Color.decode("#d0d7de");
 
-	public byte[] createSvgImageBox(Posting posting, PostingType postingType) throws IOException {
+	public byte[] createSvgImageBox(Posting posting) throws IOException {
 		SVGGraphics2D svgGenerator = SvgUtils.init();
 		svgGenerator.setSVGCanvasSize(new java.awt.Dimension(BOX_WIDTH, TOTAL_HEIGHT));
 		drawBackground(svgGenerator);
-		drawThumbnail(posting, svgGenerator, postingType);
-		drawText(posting, svgGenerator, postingType);
+		drawThumbnail(posting, svgGenerator, posting.getPostingType());
+		drawText(posting, svgGenerator, posting.getPostingType());
 		drawStroke(svgGenerator);
 
 		return SvgUtils.toByte(svgGenerator);

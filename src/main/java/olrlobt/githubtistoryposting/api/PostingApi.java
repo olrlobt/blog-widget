@@ -33,7 +33,7 @@ public class PostingApi {
 		@PathVariable String platform,
 		@PathVariable int index) throws IOException {
 		Posting posting = postingService.posting(name, platform, index);
-		byte[] svgImageBox = imageService.createSvgImageBox(posting, PostingType.BlogPosting);
+		byte[] svgImageBox = imageService.createSvgImageBox(posting);
 
 		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
 	}
@@ -49,15 +49,15 @@ public class PostingApi {
 	public ResponseEntity<byte[]> getBlogInfo(@RequestParam String name,
 		@PathVariable String platform) throws IOException {
 		Posting postingInfo = postingService.blog(name, platform);
-		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo, PostingType.BlogInfo);
+		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
 
 		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
 	}
 
 	@GetMapping("/api/fix")
-	public ResponseEntity<byte[]> getAnythingElse(@RequestParam String url) throws IOException {
-		Posting postingInfo = postingService.anything(url);
-		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo, PostingType.BlogPosting);
+	public ResponseEntity<byte[]> getAnythingElse(@RequestParam String url, @RequestParam(required = false) String theme) throws IOException {
+		Posting postingInfo = postingService.anything(url, theme);
+		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
 
 		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
 	}

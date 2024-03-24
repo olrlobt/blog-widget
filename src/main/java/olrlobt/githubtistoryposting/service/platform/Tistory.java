@@ -15,6 +15,7 @@ import olrlobt.githubtistoryposting.domain.BlogInfo;
 import olrlobt.githubtistoryposting.domain.BlogTag;
 import olrlobt.githubtistoryposting.domain.ImageSize;
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.ScrapingUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
@@ -74,7 +75,7 @@ public class Tistory implements Blog {
 		String footer = document.select(BlogInfo.TISTORY.getBlogUrl())
 			.attr("content");
 
-		return new Posting(resizeThumbnail, title, footer);
+		return new Posting(resizeThumbnail, title, footer, PostingType.BlogInfo);
 	}
 
 	private static String createUrl(String blogName, int page) {
@@ -111,7 +112,7 @@ public class Tistory implements Blog {
 		String thumbnail = findThumbnail(posting, theme.getPostingThumb());
 		String title = posting.select(theme.getPostingTitle()).text();
 		LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
-		return new Posting(thumbnail, title, date);
+		return new Posting(thumbnail, title, date, PostingType.BlogPosting);
 	}
 
 	private static String findThumbnail(Element posting, String themeTag) {
