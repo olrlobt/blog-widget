@@ -2,6 +2,8 @@ package olrlobt.githubtistoryposting.service.platform;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -118,13 +120,27 @@ public class Tistory implements Blog {
 	private static String findThumbnail(Element posting, String themeTag) {
 		String thumbnail = null;
 		Element thumb = posting.select(themeTag).first();
+
 		if (thumb != null) {
 			String src = thumb.attr("src");
+			String style = thumb.attr("style");
+			String dataSrc = thumb.attr("data-src");
+
 			if (!src.isEmpty()) {
-				thumbnail = UrlUtils.changeThumbnailSize(src, ImageSize.TistoryPosting.getSizeParam());
-				thumbnail = UrlUtils.addProtocol(thumbnail);
+				thumbnail = UrlUtils.addProtocol(src);
+			} else if (!style.isEmpty()) {
+				String urlPattern = "url\\('(.+?)'\\)";
+				Pattern pattern = Pattern.compile(urlPattern);
+				Matcher matcher = pattern.matcher(style);
+				if (matcher.find()) {
+					thumbnail = matcher.group(1);
+				}
 			} else {
-				thumbnail = thumb.attr("data-src").replace("amp;", "");
+				thumbnail = dataSrc.replace("amp;", "");
+			}
+
+			if(!thumbnail.isEmpty()){
+				thumbnail = UrlUtils.changeThumbnailSize(thumbnail, ImageSize.TistoryPosting.getSizeParam());
 			}
 		}
 		return thumbnail;

@@ -52,7 +52,7 @@ public class DateUtils {
 			return localDate.format(formatter);
 		} catch (Exception ignored) {
 			log.error("날짜 파싱 에러: {}", localDate);
-			return "0000.00.00";
+			return "";
 		}
 	}
 }

@@ -8,10 +8,10 @@ import lombok.Getter;
 @Getter
 public enum BlogTag {
 	Odyssey("headerslogundisplayon", "article", ".title", ".date", "img", ".article-content .link-article"),
-	Poster("color-gray", ".post-item", ".title", ".excerpt", "img", ".post-item a"),
-	Whatever("layout-wide", ".post-item", ".title", ".excerpt", "img", ".post-item a"),
-	Letter("thema_aqua", ".article_content", ".title_post", ".date", ".thumbnail_post", ".article_content a"),
-	Portfolio("theme_pink", ".item_category", ".name", ".date", ".thumbnail", ".item_category a"),
+	Poster("color-gray", ".post-item", ".title", "head meta[property=og:image]", "img", ".post-item a"),
+	Whatever("layout-wide", ".post-item", ".title", "head meta[property=og:image]", "img", ".post-item a"),
+	Letter("thema_aqua", ".article_content", ".title_post", ".date", ".thumbnail_post", ".article_content .link_article"),
+	Portfolio("theme_pink", ".item_category", ".name", ".date", ".thumnail", ".item_category a"),
 	BookClub("layout-aside-right", ".post-item", ".title", ".date", "img", ".post-item a"),
 	Magazine("theme_red", ".link_thumb", ".txt_thumb", ".date", ".thumb_img", ".link_thumb a"),
 	TISTORY_2("kakao", ".list_content", ".tit_post", ".txt_date", "img", ".list_content .link_post"),
