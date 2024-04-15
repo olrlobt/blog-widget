@@ -30,6 +30,7 @@ dependencies {
     implementation group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.17'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '3.2.1'
     implementation group: 'org.springframework', name: 'spring-webflux', version: '6.1.5'
+    implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.1.8'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
