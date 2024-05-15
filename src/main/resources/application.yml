@@ -1,10 +1,28 @@
+spring:
+  profiles:
+    active: blue
+  application:
+    name: blog-widget
 server:
-  port: 8080
   servlet:
     encoding:
       charset: utf-8
       enabled: true
       force: true
+
+
+---
 spring:
-  application:
-    name: blog-widget
+  config:
+    activate:
+      on-profile: blue
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: green
+server:
+  port: 8081

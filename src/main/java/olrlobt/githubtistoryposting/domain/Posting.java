@@ -12,13 +12,31 @@ public class Posting {
 
 	private final String thumbnail;
 	private final String title;
+	private final String content;
 	private final String footer;
 	private final PostingType postingType;
 
 	public Posting(String thumbnail, String title, LocalDate localDate, PostingType postingType) {
 		this.thumbnail = thumbnail;
 		this.title = title;
-		this.footer = DateUtils.toString(localDate);;
+		this.content = "";
+		this.footer = DateUtils.toString(localDate);
+		this.postingType = postingType;
+	}
+
+	public Posting(String thumbnail, String title, String content, LocalDate localDate, PostingType postingType) {
+		this.thumbnail = thumbnail;
+		this.title = title;
+		this.content = content;
+		this.footer = DateUtils.toString(localDate);
+		this.postingType = postingType;
+	}
+
+	public Posting(String thumbnail, String title, String footer, PostingType postingType) {
+		this.thumbnail = thumbnail;
+		this.title = title;
+		this.content = "";
+		this.footer = footer;
 		this.postingType = postingType;
 	}
 

@@ -25,7 +25,7 @@ public class Velog implements Blog {
 	private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile {  thumbnail }}}";
 
 	@Override
-	public Posting posting(String blogName, int index) {
+	public Posting posting(String blogName, int index, PostingType postingType) {
 		Map<String, Object> variables = Map.of(
 			"username", blogName,
 			"limit", index + 1

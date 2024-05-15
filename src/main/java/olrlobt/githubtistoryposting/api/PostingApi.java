@@ -69,7 +69,7 @@ public class PostingApi {
 	private static HttpHeaders setHeader() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf("image/svg+xml"));
-		headers.setCacheControl("no-cache");
+		headers.setCacheControl("no-store");
 		return headers;
 	}
 }

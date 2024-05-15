@@ -30,7 +30,7 @@ public class Tistory implements Blog {
 	private final ScrapingUtils scrapingUtils;
 
 	@Override
-	public Posting posting(String blogName, int index) throws IOException {
+	public Posting posting(String blogName, int index, PostingType postingType) throws IOException {
 		int page = 1;
 		Document firstDocument = scrapingUtils.byUrl(createUrl(blogName, page));
 		BlogTag theme = findTistoryTheme(firstDocument);
