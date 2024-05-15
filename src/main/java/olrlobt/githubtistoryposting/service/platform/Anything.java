@@ -21,18 +21,18 @@ public class Anything implements Blog {
 	private final ScrapingUtils scrapingUtils;
 
 	@Override
-	public Posting posting(String url, int index) throws IOException {
+	public Posting posting(String url, int index, PostingType postingType) throws IOException {
 		Document document = scrapingUtils.byUrl(url);
 		String thumb = document.select("head meta[property=og:image]").attr("content");
 		String title = document.select("head meta[property=og:title]").attr("content");
 		String footer = document.select("head meta[property=article:published_time]").attr("content");
 
 		if (!footer.isEmpty()) {
-			return  new Posting(thumb, title, DateUtils.parser(footer), PostingType.BlogPosting);
+			return  new Posting(thumb, title, DateUtils.parser(footer), postingType);
 		}
 
 		footer = document.select("head meta[property=og:url]").attr("content");
-		return new Posting(thumb, title, footer, PostingType.BlogPosting);
+		return new Posting(thumb, title, footer, postingType);
 	}
 
 	@Override

@@ -33,6 +33,10 @@ public class FontUtils {
 		return Font_Bold;
 	}
 
+	public static Font load_b(float size) {
+		return Font_Bold.deriveFont(size);
+	}
+
 	public static Font load_m() {
 		return Font_Medium;
 	}
