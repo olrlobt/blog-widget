@@ -25,14 +25,15 @@ public class Anything implements Blog {
 		Document document = scrapingUtils.byUrl(url);
 		String thumb = document.select("head meta[property=og:image]").attr("content");
 		String title = document.select("head meta[property=og:title]").attr("content");
+		String content = document.select("head meta[property=og:description]").attr("content");
 		String footer = document.select("head meta[property=article:published_time]").attr("content");
 
 		if (!footer.isEmpty()) {
-			return  new Posting(thumb, title, DateUtils.parser(footer), postingType);
+			return new Posting(thumb, title, content, DateUtils.parser(footer), postingType);
 		}
 
 		footer = document.select("head meta[property=og:url]").attr("content");
-		return new Posting(thumb, title, footer, postingType);
+		return new Posting(thumb, title, content, footer, postingType);
 	}
 
 	@Override
@@ -47,7 +48,7 @@ public class Anything implements Blog {
 		String title = document.select("head meta[property=og:title]").attr("content");
 		String footer = document.select("head meta[property=og:url]").attr("content");
 		if (!footer.isEmpty()) {
-			return  new Posting(thumb, title, footer, PostingType.BlogInfo);
+			return new Posting(thumb, title, footer, PostingType.BlogInfo);
 		}
 
 		footer = document.select("head meta[property=og:site_name]").attr("content");

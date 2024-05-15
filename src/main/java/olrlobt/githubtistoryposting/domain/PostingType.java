@@ -7,7 +7,7 @@ public enum PostingType {
 
 	BlogInfo(217, 260, 217, 217, 0, 20, 217, 14, -1, 3),
 	BlogPosting(217, 260, 217, 126, 0, 20, 217, 14, 126, 3),
-	BlogPostingWide(800, 217, 217, 217, 583, 20, 583, 25, 10, 3);
+	BlogPostingWide(800, 217, 217, 217, 583, 25, 583, 25, 10, 2);
 
 	private final int boxWidth;
 	private final int boxHeight;

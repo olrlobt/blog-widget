@@ -61,16 +61,29 @@ public class ImageService {
 
 	private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
 		svgGenerator.setPaint(Color.BLACK);
+
 		if (postingType.getTitleStartHeight() >= 0) {
-			drawMultilineText(
+			int titleStart = (int)(postingType.getTitleStartHeight() + postingType.getTextPadding() * 1.5);
+			int titleHeight = drawMultilineText(
 				svgGenerator,
 				posting.getTitle(),
 				postingType.getTextPadding(),
-				(int)(postingType.getTitleStartHeight() + (postingType.getTextPadding() * 1.5)),
+				titleStart,
 				postingType.getTitleWidth() - postingType.getTextPadding() * 2,
 				postingType.getTitleMaxLine(),
 				postingType.getTitleSize()
 			);
+			if (postingType == PostingType.BlogPostingWide && !posting.getContent().isEmpty()) {
+				drawMultilineText(
+					svgGenerator,
+					posting.getContent(),
+					postingType.getTextPadding(),
+					titleHeight,
+					postingType.getTitleWidth() - postingType.getTextPadding() * 2,
+					postingType.getTitleMaxLine(),
+					14
+				);
+			}
 		}
 		svgGenerator.setPaint(Color.GRAY);
 		svgGenerator.setFont(FontUtils.load_b());
@@ -83,7 +96,7 @@ public class ImageService {
 		svgGenerator.draw(new Rectangle2D.Double(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1));
 	}
 
-	public void drawMultilineText(SVGGraphics2D svgGenerator, String text,
+	public int drawMultilineText(SVGGraphics2D svgGenerator, String text,
 		int startX, int startY, int maxWidth, int maxLines, int titleSize) {
 		Font font = FontUtils.load_b(titleSize);
 		svgGenerator.setFont(font);
@@ -96,12 +109,12 @@ public class ImageService {
 		for (char ch : text.toCharArray()) {
 			currentLine.append(ch);
 			String lineText = currentLine.toString();
-			double lineWidth = metrics.stringWidth(lineText);
+			double lineWidth = metrics.stringWidth(lineText) + startX;
 
 			if (lineWidth > maxWidth || text.indexOf(ch) == text.length() - 1) {
 				if (lineWidth <= maxWidth && linesCount < maxLines - 1) {
 					svgGenerator.drawString(lineText, startX, startY + linesCount * lineHeight);
-					return;
+					return startY + (linesCount + 1) * lineHeight;
 				}
 
 				if (linesCount < maxLines) {
@@ -111,13 +124,15 @@ public class ImageService {
 					linesCount++;
 				} else {
 					svgGenerator.drawString(TRUNCATE, startX, startY + linesCount * lineHeight);
-					return;
+					return startY + (linesCount + 1) * lineHeight;
 				}
 			}
 		}
 
 		if (currentLine.length() > 0 && linesCount < maxLines) {
 			svgGenerator.drawString(currentLine.toString(), startX, startY + linesCount * lineHeight);
+			linesCount ++;
 		}
+		return startY + linesCount * lineHeight;
 	}
 }
