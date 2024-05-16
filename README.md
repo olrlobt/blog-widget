@@ -111,10 +111,17 @@
 ```
 
 예시:
-
+- 일반
+  
 [![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
+
+- theme=b
+  
 [![게시물](https://blogwidget.com/api/fix?theme=b&url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
-[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://naver.com/)](https://naver.com)
+
+- theme=w
+  
+[![게시물](https://blogwidget.com/api/fix?theme=w&url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
 
 <br>
 <br>
@@ -144,8 +151,11 @@
 24/03/15 - 블로그 박스, 블로그 바로가기
 24/03/18 - Tistory 'Blue Club' 서비스
 24/03/19 - blogwidget.com 도메인 설정
-24/03/24 - Velog 지원
+24/03/24 - Velog 지원, Big Theme
 24/03/24 - 포스팅 고정 위젯 추가
+24/04/20 - 로그 파일 저장
+24/04/24 - Blue/Green 무중단 배포 적용
+24/05/16 - Wide Theme 추가
 ```
 
 <br>
@@ -156,7 +166,7 @@
 ```text
 Github.io, Naver Blog 지원 예정
 여러가지 위젯 모양 지원 예정
-게시물 1개만 효과적으로 표기하는 방법 지원 예정
+텍스트 게시물 효과적으로 표기하는 방법 지원 예정
 ```
 
 
