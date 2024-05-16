@@ -112,9 +112,9 @@
 
 예시:
 
-[![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
-[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://olrlobt.tistory.com/)](https://olrlobt.tistory.com/)
-[![게시물](https://blogwidget.com/api/fix?theme=b&url=https://naver.com/)](https://naver.com)
+[![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/80)](https://olrlobt.tistory.com/)
+[![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/81)](https://olrlobt.tistory.com/)
+[![게시물](https://blogwidget.com/api/fix?url=https://olrlobt.tistory.com/82)](https://olrlobt.tistory.com/)
 
 <br>
 <br>
