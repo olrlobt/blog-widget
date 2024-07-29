@@ -16,7 +16,6 @@ import org.springframework.web.servlet.view.RedirectView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.service.ImageService;
 import olrlobt.githubtistoryposting.service.PostingService;
 
@@ -49,7 +48,7 @@ public class PostingApi {
 	@GetMapping("/api/{platform}/blog")
 	public ResponseEntity<byte[]> getBlogInfo(@RequestParam String name,
 		@PathVariable String platform) throws IOException {
-		log.info("GetBlogInfo - platform : [{}], name : [{}]", name, platform);
+		log.info("GetBlogInfo - platform : [{}], name : [{}]", platform, name);
 		Posting postingInfo = postingService.blog(name, platform);
 		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
 

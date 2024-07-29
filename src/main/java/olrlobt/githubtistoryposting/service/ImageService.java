@@ -51,9 +51,13 @@ public class ImageService {
 					postingType.getImgHeight(), null);
 			} catch (IOException ignored) {
 				log.error("요청 URL = {}", posting.getThumbnail());
+			} catch (NullPointerException e){
+				originalImage = ImageIO.read(new URL(BlogInfo.NOT_FOUND.getBlogThumb()));
+				svgGenerator.drawImage(originalImage, postingType.getImgStartWidth(), 0, postingType.getImgWidth(),
+						postingType.getImgHeight(), null);
 			}
 		} else {
-			originalImage = ImageIO.read(new URL(BlogInfo.NOT_FIND.getBlogThumb()));
+			originalImage = ImageIO.read(new URL(BlogInfo.NOT_FOUND.getBlogThumb()));
 			svgGenerator.drawImage(originalImage, postingType.getImgStartWidth(), 0, postingType.getImgWidth(),
 				postingType.getImgHeight(), null);
 		}

@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum BlogInfo {
 
-	NOT_FIND("https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg", "포스팅을 찾을 수 없습니다.", "", "-"),
+	NOT_FOUND("https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg", "포스팅을 찾을 수 없습니다.", "", "-"),
 	TISTORY("head meta[property=og:image]", "head meta[property=og:site_name]", "", "head meta[property=og:url]");
 
 	private final String blogThumb;

@@ -41,9 +41,9 @@ public class Posting {
 	}
 
 	public static Posting createNoPosting() {
-		String thumbnail = BlogInfo.NOT_FIND.getBlogThumb();
-		String title = BlogInfo.NOT_FIND.getBlogName();
-		String footer = BlogInfo.NOT_FIND.getBlogUrl();
+		String thumbnail = BlogInfo.NOT_FOUND.getBlogThumb();
+		String title = BlogInfo.NOT_FOUND.getBlogName();
+		String footer = BlogInfo.NOT_FOUND.getBlogUrl();
 		return new Posting(thumbnail, title, footer, PostingType.BlogPosting);
 	}
 
