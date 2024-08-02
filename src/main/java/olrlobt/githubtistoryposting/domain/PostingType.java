@@ -1,14 +1,17 @@
 package olrlobt.githubtistoryposting.domain;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum PostingType {
 
     BlogInfo(List.of("b", "i", "info"), 217, 260, 217, 217, 0, 20, 217, 14, -1, 3),
     BlogPosting(List.of("p", "posting"), 217, 260, 217, 126, 0, 20, 217, 14, 126, 3),
-    BlogPostingWide(List.of("w", "wide"), 800, 217, 217, 217, 583, 25, 583, 25, 10, 2);
+    BlogPostingWide(List.of("w", "wide"), 800, 217, 217, 217, 583, 28, 583, 23, 10, 2),
+    BlogPostingCard(List.of("c", "card"), 450, 130, 0, 0, 0, 25, 430, 14, 10, 1);
 
     private final List<String> theme;
     private final int boxWidth;
@@ -22,23 +25,11 @@ public enum PostingType {
     private final int titleStartHeight;
     private final int titleMaxLine;
 
-    PostingType(List<String> theme, int boxWidth, int boxHeight, int imgWidth, int imgHeight, int imgStartWidth,
-                int textPadding,
-                int titleWidth, int titleSize, int titleStartHeight, int titleMaxLine) {
-        this.theme = theme;
-        this.boxWidth = boxWidth;
-        this.boxHeight = boxHeight;
-        this.imgWidth = imgWidth;
-        this.imgHeight = imgHeight;
-        this.imgStartWidth = imgStartWidth;
-        this.textPadding = textPadding;
-        this.titleWidth = titleWidth;
-        this.titleSize = titleSize;
-        this.titleStartHeight = titleStartHeight;
-        this.titleMaxLine = titleMaxLine;
-    }
-
     public static PostingType getTheme(String key) {
+        if (key == null || key.isEmpty()) {
+            return BlogPosting;
+        }
+
         for (PostingType type : PostingType.values()) {
             if (type.theme.contains(key)) {
                 return type;

@@ -18,40 +18,29 @@ import olrlobt.githubtistoryposting.utils.ScrapingUtils;
 @RequiredArgsConstructor
 public class Anything implements Blog {
 
-	private final ScrapingUtils scrapingUtils;
+    private final ScrapingUtils scrapingUtils;
 
-	@Override
-	public Posting posting(String url, int index, PostingType postingType) throws IOException {
-		Document document = scrapingUtils.byUrl(url);
-		String thumb = document.select("head meta[property=og:image]").attr("content");
-		String title = document.select("head meta[property=og:title]").attr("content");
-		String content = document.select("head meta[property=og:description]").attr("content");
-		String footer = document.select("head meta[property=article:published_time]").attr("content");
+    @Override
+    public Posting posting(String url, int index, PostingType postingType) throws IOException {
+        Document document = scrapingUtils.byUrl(url);
+        String thumb = document.select("head meta[property=og:image]").attr("content");
+        String title = document.select("head meta[property=og:title]").attr("content");
+        String content = document.select("head meta[property=og:description]").attr("content");
+        String publishedTime = document.select("head meta[property=article:published_time]").attr("content");
 
-		if (!footer.isEmpty()) {
-			return new Posting(thumb, title, content, DateUtils.parser(footer), postingType);
-		}
+        return new Posting(thumb, title, content, DateUtils.parser(publishedTime), url, postingType);
+    }
 
-		footer = document.select("head meta[property=og:url]").attr("content");
-		return new Posting(thumb, title, content, footer, postingType);
-	}
+    @Override
+    public RedirectView link(String url, int index) {
+        return new RedirectView(url);
+    }
 
-	@Override
-	public RedirectView link(String url, int index) {
-		return new RedirectView(url);
-	}
-
-	@Override
-	public Posting blog(String url) throws IOException {
-		Document document = scrapingUtils.byUrl(url);
-		String thumb = document.select("head meta[property=og:image]").attr("content");
-		String title = document.select("head meta[property=og:title]").attr("content");
-		String footer = document.select("head meta[property=og:url]").attr("content");
-		if (!footer.isEmpty()) {
-			return new Posting(thumb, title, footer, PostingType.BlogInfo);
-		}
-
-		footer = document.select("head meta[property=og:site_name]").attr("content");
-		return new Posting(thumb, title, footer, PostingType.BlogInfo);
-	}
+    @Override
+    public Posting blog(String url) throws IOException {
+        Document document = scrapingUtils.byUrl(url);
+        String thumb = document.select("head meta[property=og:image]").attr("content");
+        String title = document.select("head meta[property=og:title]").attr("content");
+        return new Posting(thumb, title, "", "", url, PostingType.BlogInfo);
+    }
 }

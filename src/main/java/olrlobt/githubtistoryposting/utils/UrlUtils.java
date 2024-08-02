@@ -1,5 +1,6 @@
 package olrlobt.githubtistoryposting.utils;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -30,6 +31,10 @@ public class UrlUtils {
 
 	public static String encodeByKorean(String target){
 		return URLEncoder.encode(target, StandardCharsets.UTF_8);
+	}
+
+	public static String decodeByKorean(String target){
+		return URLDecoder.decode(target, StandardCharsets.UTF_8);
 	}
 
 }

@@ -29,7 +29,7 @@ public class PostingApi {
 
     @GetMapping("/api/{platform}/posting/{index}")
     public ResponseEntity<byte[]> getPosting(@RequestParam String name,
-                                             @RequestParam String theme,
+                                             @RequestParam(required = false) String theme,
                                              @PathVariable String platform,
                                              @PathVariable int index) throws IOException {
         log.info("GetPosting - platform : [{}], name : [{}] , theme : [{}]", platform, name, theme);
@@ -50,8 +50,8 @@ public class PostingApi {
     public ResponseEntity<byte[]> getBlogInfo(@RequestParam String name,
                                               @PathVariable String platform) throws IOException {
         log.info("GetBlogInfo - platform : [{}], name : [{}]", platform, name);
-        Posting postingInfo = postingService.blog(name, platform);
-        byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
+        Posting posting = postingService.blog(name, platform);
+        byte[] svgImageBox = imageService.createSvgImageBox(posting);
 
         return new ResponseEntity<>(svgImageBox, setHeader(), OK);
     }
@@ -60,8 +60,8 @@ public class PostingApi {
     public ResponseEntity<byte[]> getAnythingElse(@RequestParam String url,
                                                   @RequestParam(required = false) String theme) throws IOException {
         log.info("GetFix - url : [{}], theme : [{}]", url, theme);
-        Posting postingInfo = postingService.anything(url, theme);
-        byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
+        Posting posting = postingService.anything(url, theme);
+        byte[] svgImageBox = imageService.createSvgImageBox(posting);
 
         return new ResponseEntity<>(svgImageBox, setHeader(), OK);
     }
