@@ -33,7 +33,7 @@ public class Velog implements Blog {
 
 		VelogResponse response = request(QUERY_POSTING, variables);
 		VelogResponse.Post post = response.getData().getPosts().get(index);
-		return new Posting(post.getThumbnail(), post.getTitle(), DateUtils.parser(post.getReleased_at()), PostingType.BlogPosting);
+		return new Posting(post.getThumbnail(), post.getTitle(), DateUtils.parser(post.getReleased_at()), postingType);
 	}
 
 	@Override

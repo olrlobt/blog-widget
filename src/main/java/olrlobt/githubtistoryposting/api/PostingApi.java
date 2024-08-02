@@ -24,51 +24,52 @@ import olrlobt.githubtistoryposting.service.PostingService;
 @RequiredArgsConstructor
 public class PostingApi {
 
-	private final PostingService postingService;
-	private final ImageService imageService;
+    private final PostingService postingService;
+    private final ImageService imageService;
 
-	@GetMapping("/api/{platform}/posting/{index}")
-	public ResponseEntity<byte[]> getPosting(@RequestParam String name,
-		@PathVariable String platform,
-		@PathVariable int index) throws IOException {
-		log.info("GetPosting - platform : [{}], name : [{}]", name, platform);
-		Posting posting = postingService.posting(name, platform, index);
-		byte[] svgImageBox = imageService.createSvgImageBox(posting);
+    @GetMapping("/api/{platform}/posting/{index}")
+    public ResponseEntity<byte[]> getPosting(@RequestParam String name,
+                                             @RequestParam String theme,
+                                             @PathVariable String platform,
+                                             @PathVariable int index) throws IOException {
+        log.info("GetPosting - platform : [{}], name : [{}] , theme : [{}]", platform, name, theme);
+        Posting posting = postingService.posting(name, platform, index, theme);
+        byte[] svgImageBox = imageService.createSvgImageBox(posting);
 
-		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
-	}
+        return new ResponseEntity<>(svgImageBox, setHeader(), OK);
+    }
 
-	@GetMapping("/api/{platform}/link/{index}")
-	public RedirectView getPostingLink(@RequestParam String name,
-		@PathVariable String platform,
-		@PathVariable int index) throws IOException {
-		return postingService.link(name, platform, index);
-	}
+    @GetMapping("/api/{platform}/link/{index}")
+    public RedirectView getPostingLink(@RequestParam String name,
+                                       @PathVariable String platform,
+                                       @PathVariable int index) throws IOException {
+        return postingService.link(name, platform, index);
+    }
 
-	@GetMapping("/api/{platform}/blog")
-	public ResponseEntity<byte[]> getBlogInfo(@RequestParam String name,
-		@PathVariable String platform) throws IOException {
-		log.info("GetBlogInfo - platform : [{}], name : [{}]", platform, name);
-		Posting postingInfo = postingService.blog(name, platform);
-		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
+    @GetMapping("/api/{platform}/blog")
+    public ResponseEntity<byte[]> getBlogInfo(@RequestParam String name,
+                                              @PathVariable String platform) throws IOException {
+        log.info("GetBlogInfo - platform : [{}], name : [{}]", platform, name);
+        Posting postingInfo = postingService.blog(name, platform);
+        byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
 
-		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
-	}
+        return new ResponseEntity<>(svgImageBox, setHeader(), OK);
+    }
 
-	@GetMapping("/api/fix")
-	public ResponseEntity<byte[]> getAnythingElse(@RequestParam String url,
-		@RequestParam(required = false) String theme) throws IOException {
-		log.info("GetFix - url : [{}], theme : [{}]", url, theme);
-		Posting postingInfo = postingService.anything(url, theme);
-		byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
+    @GetMapping("/api/fix")
+    public ResponseEntity<byte[]> getAnythingElse(@RequestParam String url,
+                                                  @RequestParam(required = false) String theme) throws IOException {
+        log.info("GetFix - url : [{}], theme : [{}]", url, theme);
+        Posting postingInfo = postingService.anything(url, theme);
+        byte[] svgImageBox = imageService.createSvgImageBox(postingInfo);
 
-		return new ResponseEntity<>(svgImageBox, setHeader(), OK);
-	}
+        return new ResponseEntity<>(svgImageBox, setHeader(), OK);
+    }
 
-	private static HttpHeaders setHeader() {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.valueOf("image/svg+xml"));
-		headers.setCacheControl("no-store");
-		return headers;
-	}
+    private static HttpHeaders setHeader() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("image/svg+xml"));
+        headers.setCacheControl("no-store");
+        return headers;
+    }
 }

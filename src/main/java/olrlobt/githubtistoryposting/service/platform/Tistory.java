@@ -40,7 +40,7 @@ public class Tistory implements Blog {
 		Document document = scrapingUtils.byUrl(createUrl(blogName, page));
 
 		Elements postings = document.select(theme.getPostingList());
-		return findPosting(postings, index % postingOfPage, theme);
+		return findPosting(postings, index % postingOfPage, theme, postingType);
 	}
 
 	@Override
@@ -103,18 +103,18 @@ public class Tistory implements Blog {
 		return postings.size();
 	}
 
-	private Posting findPosting(Elements postings, int index, BlogTag theme) {
+	private Posting findPosting(Elements postings, int index, BlogTag theme, PostingType postingType) {
 		if (index >= postings.size()) {
 			return Posting.createNoPosting();
 		}
-		return makePosting(postings.get(index), theme);
+		return makePosting(postings.get(index), theme, postingType);
 	}
 
-	private Posting makePosting(Element posting, BlogTag theme) {
+	private Posting makePosting(Element posting, BlogTag theme, PostingType postingType) {
 		String thumbnail = findThumbnail(posting, theme.getPostingThumb());
 		String title = posting.select(theme.getPostingTitle()).text();
 		LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
-		return new Posting(thumbnail, title, date, PostingType.BlogPosting);
+		return new Posting(thumbnail, title, date, postingType);
 	}
 
 	private static String findThumbnail(Element posting, String themeTag) {
