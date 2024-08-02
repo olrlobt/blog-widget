@@ -16,8 +16,10 @@ public class FontUtils {
 
 	@PostConstruct
 	private void init() {
-		Font_Medium = setFont("/static/font/NotoSansKR-Medium.ttf", 14f);
-		Font_Bold = setFont("/static/font/NotoSansKR-Bold.ttf", 14f);
+//		Font_Medium = setFont("/static/font/NotoSansKR-Medium.ttf", 14f);
+		Font_Medium = setFont("/static/font/SF-Pro-Display-Regular.otf", 14f);
+//		Font_Bold = setFont("/static/font/NotoSansKR-Bold.ttf", 14f);
+		Font_Bold = setFont("/static/font/SF-Pro-Display-Bold.otf", 14f);
 	}
 
 	private Font setFont(String path, float size) {
