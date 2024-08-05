@@ -41,7 +41,9 @@ public class Tistory implements Blog {
         Document document = scrapingUtils.byUrl(url);
 
         Elements postings = document.select(theme.getPostingList());
-        return findPosting(postings, index % postingOfPage, theme, postingType, url);
+        Posting posting = findPosting(postings, index % postingOfPage, theme, postingType, url);
+        posting.setBlogImage(getBlogImage(document));
+        return posting;
     }
 
     @Override
@@ -85,6 +87,11 @@ public class Tistory implements Blog {
         return "https://" + blogName + ".tistory.com/?page=" + page;
     }
 
+    private String getBlogImage(Document document){
+        String thumb = document.select("head meta[property=og:image]").attr("content");
+        return thumb;
+    }
+
     /**
      * Tistory 테마 찾기
      */
@@ -114,8 +121,9 @@ public class Tistory implements Blog {
     private Posting makePosting(Element posting, BlogTag theme, PostingType postingType, String url) {
         String thumbnail = findThumbnail(posting, theme.getPostingThumb());
         String title = posting.select(theme.getPostingTitle()).text();
+        String content = posting.select(theme.getPostingContent()).text();
         LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
-        return new Posting(thumbnail, title, "", date, url, postingType);
+        return new Posting(thumbnail, title, content, date, url, postingType);
     }
 
     private static String findThumbnail(Element posting, String themeTag) {

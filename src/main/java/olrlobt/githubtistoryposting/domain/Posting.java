@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 
 @Getter
@@ -11,6 +12,8 @@ import olrlobt.githubtistoryposting.utils.DateUtils;
 public class Posting {
 
     private final String thumbnail;
+    @Setter
+    private String blogImage;
     private final String title;
     private String content;
     private String publishedTime;
@@ -23,6 +26,16 @@ public class Posting {
         this.title = title;
         this.content = content;
         this.publishedTime = DateUtils.toString(publishedTime);
+        this.footer = footer;
+        this.postingType = postingType;
+    }
+
+    public Posting(String thumbnail, String title, String content, String publishedTime, String footer,
+                   PostingType postingType) {
+        this.thumbnail = thumbnail;
+        this.title = title;
+        this.content = content;
+        this.publishedTime = publishedTime;
         this.footer = footer;
         this.postingType = postingType;
     }
