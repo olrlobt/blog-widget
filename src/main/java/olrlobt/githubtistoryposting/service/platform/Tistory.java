@@ -87,7 +87,7 @@ public class Tistory implements Blog {
         return "https://" + blogName + ".tistory.com/?page=" + page;
     }
 
-    private String getBlogImage(Document document){
+    private String getBlogImage(Document document) {
         String thumb = document.select("head meta[property=og:image]").attr("content");
         return thumb;
     }

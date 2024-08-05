@@ -41,8 +41,7 @@ public class ImageService {
         svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
     }
 
-    private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) throws
-            IOException {
+    private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
         String imageUrl = posting.getThumbnail();
 
         if (imageUrl == null || imageUrl.isEmpty()) {
@@ -88,7 +87,8 @@ public class ImageService {
         svgGenerator.setFont(FontUtils.load_b());
 
         String footer = posting.getPublishedTime();
-        if (posting.getPublishedTime() == null || posting.getPublishedTime().isEmpty() || postingType == PostingType.BlogInfo) {
+        if (posting.getPublishedTime() == null || posting.getPublishedTime().isEmpty()
+                || postingType == PostingType.BlogInfo) {
             footer = posting.getFooter();
         }
         svgGenerator.drawString(footer, postingType.getTextPadding(),
@@ -116,19 +116,20 @@ public class ImageService {
             double lineWidth = metrics.stringWidth(lineText) + startX;
 
             if (lineWidth > maxWidth || text.indexOf(ch) == text.length() - 1) {
-                if (lineWidth <= maxWidth && linesCount < maxLines - 1) {
+                if (linesCount < maxLines - 1) {
                     svgGenerator.drawString(lineText, startX, startY + linesCount * lineHeight);
-                    return startY + (linesCount + 1) * lineHeight;
-                }
-
-                if (linesCount < maxLines) {
-                    String toDraw = lineWidth > maxWidth ? lineText.substring(0, lineText.length() - 1) : lineText;
-                    svgGenerator.drawString(toDraw, startX, startY + linesCount * lineHeight);
-                    currentLine = lineWidth > maxWidth ? new StringBuilder("" + ch) : new StringBuilder();
                     linesCount++;
+                    currentLine = new StringBuilder();
                 } else {
-                    svgGenerator.drawString(TRUNCATE, startX, startY + linesCount * lineHeight);
-                    return startY + (linesCount + 1) * lineHeight;
+                    if (lineWidth > maxWidth) {
+                        while (metrics.stringWidth(lineText + TRUNCATE) > maxWidth && lineText.length() > 0) {
+                            lineText = lineText.substring(0, lineText.length() - 1);
+                        }
+                        lineText += TRUNCATE;
+                    }
+                    svgGenerator.drawString(lineText, startX, startY + linesCount * lineHeight);
+                    linesCount++;
+                    break;
                 }
             }
         }
