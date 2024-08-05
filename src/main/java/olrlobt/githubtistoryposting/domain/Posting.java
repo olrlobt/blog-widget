@@ -14,6 +14,8 @@ public class Posting {
     private final String thumbnail;
     @Setter
     private String blogImage;
+    @Setter
+    private String author;
     private final String title;
     private String content;
     private String publishedTime;

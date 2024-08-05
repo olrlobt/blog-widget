@@ -43,6 +43,7 @@ public class Tistory implements Blog {
         Elements postings = document.select(theme.getPostingList());
         Posting posting = findPosting(postings, index % postingOfPage, theme, postingType, url);
         posting.setBlogImage(getBlogImage(document));
+        posting.setAuthor(blogName);
         return posting;
     }
 
@@ -88,8 +89,7 @@ public class Tistory implements Blog {
     }
 
     private String getBlogImage(Document document) {
-        String thumb = document.select("head meta[property=og:image]").attr("content");
-        return thumb;
+        return document.select("head meta[property=og:image]").attr("content");
     }
 
     /**

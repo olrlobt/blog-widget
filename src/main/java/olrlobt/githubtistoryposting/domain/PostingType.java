@@ -8,11 +8,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum PostingType {
 
-    BlogInfo(List.of("i", "info"), 217, 260, 217, 217, 0, 20, 217, 14, -1, 3),
-    BlogPosting(List.of("p", "posting"), 217, 260, 217, 126, 0, 20, 217, 14, 126, 3),
-    BlogPostingWide(List.of("w", "wide"), 800, 217, 217, 217, 583, 28, 583, 23, 10, 2),
-    BlogPostingCard(List.of("c", "card"), 450, 130, 0, 0, 0, 25, 430, 14, 10, 1),
-    BlogPostingBig(List.of("b", "big"), 320, 376, 320, 167, 0, 25, 288, 16, 183, 1),
+    BlogInfo(List.of("i", "info"), 217, 260, 217, 217, 0, 20, -1, 217, 14, -1, 3, -1, -1, 240, -1),
+    BlogPosting(List.of("p", "posting"), 217, 260, 217, 126, 0, 20, -1, 217, 14, 126, 3, -1, -1, 240, -1),
+    BlogPostingWide(List.of("w", "wide"), 800, 217, 217, 217, 583, 28, -1, 583, 23, 10, 2, 1, 3, 189, -1),
+    BlogPostingCard(List.of("c", "card"), 450, 130, 0, 0, 0, 25, -1, 430, 14, 10, 1, -1, -1, 105, -1),
+    BlogPostingBig(List.of("b", "big"), 320, 376, 320, 167, 0, 20, 1, 300, 16, 180, 1, 1, 3, 320, 340),
     ;
 
     private final List<String> theme;
@@ -22,10 +22,15 @@ public enum PostingType {
     private final int imgHeight;
     private final int imgStartWidth;
     private final int textPadding;
+    private final int titleWeight;
     private final int titleWidth;
     private final int titleSize;
     private final int titleStartHeight;
     private final int titleMaxLine;
+    private final int contentHeight;
+    private final int contentMaxLine;
+    private final int footerStartHeight;
+    private final int blogImageStartHeight;
 
     public static PostingType getTheme(String key) {
         if (key == null || key.isEmpty()) {

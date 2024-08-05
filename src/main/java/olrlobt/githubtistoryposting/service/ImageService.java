@@ -1,6 +1,7 @@
 package olrlobt.githubtistoryposting.service;
 
 import java.awt.*;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -31,6 +32,8 @@ public class ImageService {
         drawBackground(svgGenerator, postingType);
         drawThumbnail(posting, svgGenerator, posting.getPostingType());
         drawText(posting, svgGenerator, posting.getPostingType());
+        drawFooter(posting, svgGenerator, postingType);
+        drawAuthor(posting, svgGenerator, postingType);
         drawStroke(svgGenerator, posting.getPostingType().getBoxWidth(), posting.getPostingType().getBoxHeight());
 
         return SvgUtils.toByte(svgGenerator);
@@ -59,6 +62,11 @@ public class ImageService {
 
     private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
         svgGenerator.setPaint(Color.BLACK);
+        if (postingType.getTitleWeight() == 1) {
+            svgGenerator.setFont(FontUtils.load_b(postingType.getTitleSize()));
+        }else{
+            svgGenerator.setFont(FontUtils.load_m(postingType.getTitleSize()));
+        }
 
         if (postingType.getTitleStartHeight() >= 0) {
             int titleStart = (int) (postingType.getTitleStartHeight() + postingType.getTextPadding() * 1.5);
@@ -69,40 +77,110 @@ public class ImageService {
                     titleStart,
                     postingType.getTitleWidth() - postingType.getTextPadding() * 2,
                     postingType.getTitleMaxLine(),
-                    postingType.getTitleSize()
+                    svgGenerator.getFont()
             );
-            if (postingType == PostingType.BlogPostingWide && !posting.getContent().isEmpty()) {
+
+            if (postingType.getContentHeight() != -1 && !posting.getContent().isEmpty()) {
                 drawMultilineText(
                         svgGenerator,
                         posting.getContent(),
                         postingType.getTextPadding(),
                         titleHeight,
                         postingType.getTitleWidth() - postingType.getTextPadding() * 2,
-                        postingType.getTitleMaxLine(),
-                        14
+                        postingType.getContentMaxLine(),
+                        FontUtils.load_m()
                 );
             }
         }
-        svgGenerator.setPaint(Color.GRAY);
-        svgGenerator.setFont(FontUtils.load_b());
+    }
 
+    private static void drawFooter(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
+        //FOOTER
+        svgGenerator.setFont(FontUtils.load_m());
+        svgGenerator.setPaint(Color.GRAY);
         String footer = posting.getPublishedTime();
         if (posting.getPublishedTime() == null || posting.getPublishedTime().isEmpty()
                 || postingType == PostingType.BlogInfo) {
             footer = posting.getFooter();
         }
-        svgGenerator.drawString(footer, postingType.getTextPadding(),
-                postingType.getBoxHeight() - postingType.getTextPadding());
+        svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getFooterStartHeight());
     }
+
+    private void drawAuthor(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
+        if (postingType.getBlogImageStartHeight() == -1) {
+            return;
+        }
+        String imageUrl = posting.getBlogImage();
+
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
+        }
+
+        int width = 24;
+        int height = 24;
+
+        try {
+            BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
+
+            // 원형 마스크 생성
+            BufferedImage mask = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2dMask = mask.createGraphics();
+            g2dMask.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2dMask.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2dMask.fillOval(0, 0, width, height);
+            g2dMask.dispose();
+
+            // 원형 마스크를 적용한 이미지 생성
+            BufferedImage circularImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = circularImage.createGraphics();
+
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.drawImage(originalImage, 0, 0, width, height, null);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_IN));
+            g2d.drawImage(mask, 0, 0, null);
+            g2d.dispose();
+
+            // 원형 이미지를 svgGenerator에 그리기
+            svgGenerator.drawImage(circularImage, postingType.getTextPadding(), postingType.getBlogImageStartHeight(),
+                    null);
+        } catch (IOException e) {
+            log.error("Failed to load image from URL: {}", imageUrl, e);
+        }
+
+        drawStroke(svgGenerator, 0, postingType.getBoxWidth(), postingType.getBlogImageStartHeight() - postingType.getTextPadding()/2,
+                postingType.getBlogImageStartHeight() - postingType.getTextPadding()/2 + 1);
+
+        svgGenerator.setFont(FontUtils.load_m());
+        String byText = "by ";
+        svgGenerator.setPaint(Color.GRAY);
+        svgGenerator.drawString(byText, postingType.getTextPadding() + width * 3 / 2,
+                postingType.getBlogImageStartHeight() + height * 2 / 3);
+
+// 글자 폭 계산 (다음 텍스트의 시작 위치를 정하기 위해)
+        FontMetrics metrics = svgGenerator.getFontMetrics();
+        int byTextWidth = metrics.stringWidth(byText);
+
+// author 부분
+        String authorText = posting.getAuthor();
+        svgGenerator.setPaint(Color.BLACK);
+        svgGenerator.drawString(authorText, postingType.getTextPadding() + width * 3 / 2 + byTextWidth,
+                postingType.getBlogImageStartHeight() + height * 2 / 3);
+    }
+
 
     private void drawStroke(SVGGraphics2D svgGenerator, int BOX_WIDTH, int TOTAL_HEIGHT) {
         svgGenerator.setPaint(STROKE_COLOR);
         svgGenerator.draw(new Rectangle2D.Double(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1));
     }
 
+    private void drawStroke(SVGGraphics2D svgGenerator, int startX, int endX, int startY, int endY) {
+        svgGenerator.setPaint(STROKE_COLOR);
+        svgGenerator.draw(new Line2D.Double(startX, startY, endX, endY));
+    }
+
     public int drawMultilineText(SVGGraphics2D svgGenerator, String text,
-                                 int startX, int startY, int maxWidth, int maxLines, int titleSize) {
-        Font font = FontUtils.load_b(titleSize);
+                                 int startX, int startY, int maxWidth, int maxLines, Font font) {
         svgGenerator.setFont(font);
         FontMetrics metrics = svgGenerator.getFontMetrics(font);
 
