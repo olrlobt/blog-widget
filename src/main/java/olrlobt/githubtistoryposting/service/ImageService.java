@@ -46,15 +46,46 @@ public class ImageService {
 
     private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
         String imageUrl = posting.getThumbnail();
-
         if (imageUrl == null || imageUrl.isEmpty()) {
             imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
         }
 
         try {
             BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
-            svgGenerator.drawImage(originalImage, postingType.getImgStartWidth(), 0,
-                    postingType.getImgWidth(), postingType.getImgHeight(), null);
+            int originalWidth = originalImage.getWidth();
+            int originalHeight = originalImage.getHeight();
+
+            int targetWidth = postingType.getImgWidth();
+            int targetHeight = postingType.getImgHeight();
+            int targetX = postingType.getImgStartWidth();
+            int targetY = 0;
+            double originalAspect = (double) originalWidth / originalHeight;
+            double targetAspect = (double) targetWidth / targetHeight;
+
+            int drawWidth, drawHeight;
+            int xOffset = 0, yOffset = 0;
+
+            if (originalAspect > targetAspect) { // 원본 이미지 width > height
+                drawHeight = targetHeight;
+                drawWidth = (int) (targetHeight * originalAspect);
+                xOffset = (drawWidth - targetWidth) / 2;
+            } else { // 원본 이미지 height > width
+                drawWidth = targetWidth;
+                drawHeight = (int) (targetWidth / originalAspect);
+                yOffset = (drawHeight - targetHeight) / 2;
+            }
+
+            Shape originalClip = svgGenerator.getClip();
+            svgGenerator.setClip(targetX, targetY, targetWidth, targetHeight);
+            svgGenerator.drawImage(originalImage,
+                    targetX - xOffset,
+                    targetY - yOffset,
+                    drawWidth,
+                    drawHeight,
+                    null);
+
+            svgGenerator.setClip(originalClip);
+
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
         }
