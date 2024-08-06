@@ -23,7 +23,8 @@ import olrlobt.githubtistoryposting.utils.SvgUtils;
 @Slf4j
 public class ImageService {
     private final String TRUNCATE = "...";
-    private final Color STROKE_COLOR = Color.decode("#d0d7de");
+    //    private final Color STROKE_COLOR = Color.decode("#d0d7de");
+    private final Color STROKE_COLOR = new Color(139, 139, 139, 34);
 
     public byte[] createSvgImageBox(Posting posting) throws IOException {
         SVGGraphics2D svgGenerator = SvgUtils.init();
@@ -95,7 +96,7 @@ public class ImageService {
         svgGenerator.setPaint(Color.BLACK);
         if (postingType.getTitleWeight() == 1) {
             svgGenerator.setFont(FontUtils.load_b(postingType.getTitleSize()));
-        }else{
+        } else {
             svgGenerator.setFont(FontUtils.load_m(postingType.getTitleSize()));
         }
 
@@ -111,7 +112,7 @@ public class ImageService {
                     svgGenerator.getFont()
             );
 
-            if (postingType.getContentHeight() != -1 && !posting.getContent().isEmpty()) {
+            if (postingType.getContentMaxLine() != -1 && !posting.getContent().isEmpty()) {
                 drawMultilineText(
                         svgGenerator,
                         posting.getContent(),
@@ -119,22 +120,38 @@ public class ImageService {
                         titleHeight,
                         postingType.getTitleWidth() - postingType.getTextPadding() * 2,
                         postingType.getContentMaxLine(),
-                        FontUtils.load_m()
+                        FontUtils.load_m(postingType.getContentSize())
                 );
             }
         }
     }
 
     private static void drawFooter(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
-        //FOOTER
+        if (postingType.getFooterType() == -1) {
+            return;
+        }
+
         svgGenerator.setFont(FontUtils.load_m());
         svgGenerator.setPaint(Color.GRAY);
-        String footer = posting.getPublishedTime();
-        if (posting.getPublishedTime() == null || posting.getPublishedTime().isEmpty()
-                || postingType == PostingType.BlogInfo) {
-            footer = posting.getFooter();
+        String footer = "";
+        String publishedTime = posting.getPublishedTime();
+        String url = posting.getUrl();
+        int height = 0;
+        if (postingType.getFooterType() == 1) {
+            footer = (publishedTime != null && !publishedTime.isEmpty()) ? publishedTime : url;
+            height = (publishedTime != null && !publishedTime.isEmpty()) ? postingType.getPublishedTimeStartHeight()
+                    : postingType.getUrlStartHeight();
+        } else if (postingType.getFooterType() == 2) {
+            footer = (url != null && !url.isEmpty()) ? url : publishedTime;
+            height = (url != null && !url.isEmpty()) ? postingType.getUrlStartHeight()
+                    : postingType.getPublishedTimeStartHeight();
+        } else if (postingType.getFooterType() == 0) {
+            footer = publishedTime;
+            svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getPublishedTimeStartHeight());
+            footer = url;
+            height = postingType.getUrlStartHeight();
         }
-        svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getFooterStartHeight());
+        svgGenerator.drawString(footer, postingType.getTextPadding(), height);
     }
 
     private void drawAuthor(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
@@ -179,8 +196,9 @@ public class ImageService {
             log.error("Failed to load image from URL: {}", imageUrl, e);
         }
 
-        drawStroke(svgGenerator, 0, postingType.getBoxWidth(), postingType.getBlogImageStartHeight() - postingType.getTextPadding()/2,
-                postingType.getBlogImageStartHeight() - postingType.getTextPadding()/2 + 1);
+        drawStroke(svgGenerator, 0, postingType.getBoxWidth(),
+                postingType.getBlogImageStartHeight() - postingType.getTextPadding() / 2,
+                postingType.getBlogImageStartHeight() - postingType.getTextPadding() / 2 + 1);
 
         svgGenerator.setFont(FontUtils.load_m());
         String byText = "by ";

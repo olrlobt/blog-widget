@@ -19,34 +19,34 @@ public class Posting {
     private final String title;
     private String content;
     private String publishedTime;
-    private String footer;
+    private String url;
     private final PostingType postingType;
 
-    public Posting(String thumbnail, String title, String content, LocalDate publishedTime, String footer,
+    public Posting(String thumbnail, String title, String content, LocalDate publishedTime, String url,
                    PostingType postingType) {
         this.thumbnail = thumbnail;
         this.title = title;
         this.content = content;
         this.publishedTime = DateUtils.toString(publishedTime);
-        this.footer = footer;
+        this.url = url;
         this.postingType = postingType;
     }
 
-    public Posting(String thumbnail, String title, String content, String publishedTime, String footer,
+    public Posting(String thumbnail, String title, String content, String publishedTime, String url,
                    PostingType postingType) {
         this.thumbnail = thumbnail;
         this.title = title;
         this.content = content;
         this.publishedTime = publishedTime;
-        this.footer = footer;
+        this.url = url;
         this.postingType = postingType;
     }
 
     public static Posting createNoPosting() {
         String thumbnail = BlogInfo.NOT_FOUND.getBlogThumb();
         String title = BlogInfo.NOT_FOUND.getBlogName();
-        String footer = BlogInfo.NOT_FOUND.getBlogUrl();
-        return new Posting(thumbnail, title, "", "", footer, PostingType.BlogPosting);
+        String url = BlogInfo.NOT_FOUND.getBlogUrl();
+        return new Posting(thumbnail, title, "", "", url, PostingType.BlogPosting);
     }
 
     @Override

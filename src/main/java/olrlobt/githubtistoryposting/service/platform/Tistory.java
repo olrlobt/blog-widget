@@ -123,6 +123,10 @@ public class Tistory implements Blog {
         String title = posting.select(theme.getPostingTitle()).text();
         String content = posting.select(theme.getPostingContent()).text();
         LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
+        int questionMarkIndex = url.indexOf("?");
+        if (questionMarkIndex != -1) {
+            url = url.substring(0, questionMarkIndex);
+        }
         return new Posting(thumbnail, title, content, date, url, postingType);
     }
 
