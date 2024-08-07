@@ -20,6 +20,8 @@ public class Posting {
     private String content;
     private String publishedTime;
     private String url;
+    @Setter
+    private String siteName;
     private final PostingType postingType;
 
     public Posting(String thumbnail, String title, String content, LocalDate publishedTime, String url,

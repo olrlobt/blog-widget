@@ -148,7 +148,8 @@ public class ImageService {
         } else if (postingType.getFooterType() == 0) {
             footer = publishedTime;
             svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getPublishedTimeStartHeight());
-            footer = url;
+            svgGenerator.setFont(FontUtils.load_b());
+            footer = posting.getSiteName();
             height = postingType.getUrlStartHeight();
         }
         svgGenerator.drawString(footer, postingType.getTextPadding(), height);
@@ -230,18 +231,16 @@ public class ImageService {
 
     public int drawMultilineText(SVGGraphics2D svgGenerator, String text,
                                  int startX, int startY, int maxWidth, int maxLines, Font font) {
-        svgGenerator.setFont(font);
-        FontMetrics metrics = svgGenerator.getFontMetrics(font);
-
+        FontMetrics metrics = svgGenerator.getFontMetrics(FontUtils.load_size(font.getSize()));
         int lineHeight = metrics.getHeight();
+        svgGenerator.setFont(font);
+
         int linesCount = 0;
         StringBuilder currentLine = new StringBuilder();
-
         for (char ch : text.toCharArray()) {
             currentLine.append(ch);
             String lineText = currentLine.toString();
             double lineWidth = metrics.stringWidth(lineText) + startX;
-
             if (lineWidth > maxWidth || text.indexOf(ch) == text.length() - 1) {
                 if (linesCount < maxLines - 1) {
                     svgGenerator.drawString(lineText, startX, startY + linesCount * lineHeight);

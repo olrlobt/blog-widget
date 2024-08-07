@@ -44,6 +44,7 @@ public class Tistory implements Blog {
         Posting posting = findPosting(postings, index % postingOfPage, theme, postingType, url);
         posting.setBlogImage(getBlogImage(document));
         posting.setAuthor(blogName);
+        posting.setSiteName(blogName + ".tistory");
         return posting;
     }
 
@@ -111,7 +112,8 @@ public class Tistory implements Blog {
         return postings.size();
     }
 
-    private Posting findPosting(Elements postings, int index, BlogTag theme, PostingType postingType, String url) {
+    private Posting findPosting(Elements postings, int index, BlogTag theme, PostingType postingType,
+                                String url) {
         if (index >= postings.size()) {
             return Posting.createNoPosting();
         }
@@ -127,7 +129,7 @@ public class Tistory implements Blog {
         if (questionMarkIndex != -1) {
             url = url.substring(0, questionMarkIndex);
         }
-        return new Posting(thumbnail, title, content, date, url, postingType);
+        return new Posting(thumbnail, title, content, date, url,  postingType);
     }
 
     private static String findThumbnail(Element posting, String themeTag) {

@@ -12,14 +12,16 @@ import jakarta.annotation.PostConstruct;
 public class FontUtils {
 
     private static Font Font_Medium;
+    private static Font Font_Size;
     private static Font Font_Bold;
 
     @PostConstruct
     private void init() {
 //		Font_Medium = setFont("/static/font/NotoSansKR-Medium.ttf", 14f);
-        Font_Medium = setFont("/static/font/SF-Pro-Display-Regular.otf", 14f);
+        Font_Size = setFont("/static/font/SF-Pro-Display-Regular.otf", 14f);
+        Font_Medium = setFont("/static/font/segoe-ui.ttf", 14f);
 //		Font_Bold = setFont("/static/font/NotoSansKR-Bold.ttf", 14f);
-        Font_Bold = setFont("/static/font/SF-Pro-Display-Bold.otf", 14f);
+        Font_Bold = setFont("/static/font/segoe-ui.ttf", 14f);
     }
 
     private Font setFont(String path, float size) {
@@ -29,6 +31,10 @@ public class FontUtils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static Font load_size(float size) {
+        return Font_Size.deriveFont(size);
     }
 
     public static Font load_b() {
