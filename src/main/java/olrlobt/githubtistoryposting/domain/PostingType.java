@@ -8,11 +8,14 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum PostingType {
 
-    BlogInfo(List.of("i", "info"), 217, 260, 217, 217, 0, 20, -1, 217, 14, -1, 3, -1, -1, -1, 2, 240, 240, -1),
-    BlogPosting(List.of("p", "posting"), 217, 260, 217, 126, 0, 20, -1, 217, 14, 126, 3, -1, -1, -1, 1, 240, 240, -1),
-    BlogPostingWide(List.of("w", "wide"), 800, 217, 217, 217, 583, 28, -1, 583, 23, 10, 2, 1, 3, 14, 1, 189, 189, -1),
-    BlogPostingCard(List.of("c", "card"), 450, 130, 0, 0, 0, 25, 1, 430, 14, 10, 1, 1, 1, 12, 0, 105, 30, -1),
-    BlogPostingBig(List.of("b", "big"), 320, 376, 320, 167, 0, 20, 1, 300, 16, 180, 1, 1, 3, 14, 1, 320, 320, 340),
+    BlogInfo(List.of("i", "info"), 217, 260, 217, 217, 0, 20, -1, 217, 14, -1, 3, -1, -1, -1, 2, 240, 240, -1, 10, 10),
+    BlogPosting(List.of("p", "posting"), 217, 260, 217, 126, 0, 20, -1, 217, 14, 126, 3, -1, -1, -1, 1, 240, 240, -1,
+            10, 10),
+    BlogPostingWide(List.of("w", "wide"), 800, 217, 217, 217, 583, 28, -1, 583, 23, 10, 2, 1, 3, 14, 1, 189, 189, -1,
+            10, 10),
+    BlogPostingCard(List.of("c", "card"), 450, 130, 0, 0, 0, 25, 1, 430, 14, 10, 1, 1, 1, 12, 0, 105, 30, -1, 10, 10),
+    BlogPostingBig(List.of("b", "big"), 320, 376, 320, 167, 0, 20, 1, 300, 16, 180, 1, 1, 3, 14, 1, 320, 320, 340, 10,
+            10),
     ;
 
     private final List<String> theme;
@@ -34,6 +37,8 @@ public enum PostingType {
     private final int publishedTimeStartHeight;
     private final int urlStartHeight;
     private final int blogImageStartHeight;
+    private final int arcWidth;
+    private final int arcHeight;
 
     public static PostingType getTheme(String key) {
         if (key == null || key.isEmpty()) {

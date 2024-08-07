@@ -1,8 +1,10 @@
 package olrlobt.githubtistoryposting.service;
 
 import java.awt.*;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -42,7 +44,14 @@ public class ImageService {
 
     private void drawBackground(SVGGraphics2D svgGenerator, PostingType postingType) {
         svgGenerator.setPaint(Color.WHITE);
-        svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
+
+        RoundRectangle2D background = new RoundRectangle2D.Double(
+                0, 0,
+                postingType.getBoxWidth(), postingType.getBoxHeight(),
+                postingType.getArcWidth(), postingType.getArcHeight()
+        );
+        svgGenerator.fill(background);
+//        svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
     }
 
     private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
@@ -76,8 +85,20 @@ public class ImageService {
                 yOffset = (drawHeight - targetHeight) / 2;
             }
 
+            RoundRectangle2D roundedClip = new RoundRectangle2D.Double(
+                    0, 0, postingType.getBoxWidth(), postingType.getBoxHeight(), postingType.getArcWidth(),
+                    postingType.getArcHeight()
+            );
+            Rectangle2D rectClip = new Rectangle2D.Double(
+                    targetX, targetY, targetWidth, targetHeight
+            );
+
+            Area combinedClip = new Area(roundedClip);
+            combinedClip.intersect(new Area(rectClip));
+
             Shape originalClip = svgGenerator.getClip();
-            svgGenerator.setClip(targetX, targetY, targetWidth, targetHeight);
+            svgGenerator.setClip(combinedClip);
+
             svgGenerator.drawImage(originalImage,
                     targetX - xOffset,
                     targetY - yOffset,
