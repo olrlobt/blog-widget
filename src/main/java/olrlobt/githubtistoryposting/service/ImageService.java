@@ -1,6 +1,7 @@
 package olrlobt.githubtistoryposting.service;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -25,8 +26,8 @@ import olrlobt.githubtistoryposting.utils.SvgUtils;
 @Slf4j
 public class ImageService {
     private final String TRUNCATE = "...";
-    //    private final Color STROKE_COLOR = Color.decode("#d0d7de");
-    private final Color STROKE_COLOR = new Color(139, 139, 139, 34);
+    private final Color STROKE_COLOR = Color.decode("#d0d7de");
+//    private final Color STROKE_COLOR = new Color(139, 139, 139, 34);
 
     public byte[] createSvgImageBox(Posting posting) throws IOException {
         SVGGraphics2D svgGenerator = SvgUtils.init();
@@ -37,7 +38,8 @@ public class ImageService {
         drawText(posting, svgGenerator, posting.getPostingType());
         drawFooter(posting, svgGenerator, postingType);
         drawAuthor(posting, svgGenerator, postingType);
-        drawStroke(svgGenerator, posting.getPostingType().getBoxWidth(), posting.getPostingType().getBoxHeight());
+        drawWatermark(posting, svgGenerator, postingType);
+        drawStroke(svgGenerator, postingType);
 
         return SvgUtils.toByte(svgGenerator);
     }
@@ -48,7 +50,7 @@ public class ImageService {
         RoundRectangle2D background = new RoundRectangle2D.Double(
                 0, 0,
                 postingType.getBoxWidth(), postingType.getBoxHeight(),
-                postingType.getArcWidth(), postingType.getArcHeight()
+                postingType.getBoxArcWidth(), postingType.getBoxArcHeight()
         );
         svgGenerator.fill(background);
 //        svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
@@ -67,7 +69,7 @@ public class ImageService {
 
             int targetWidth = postingType.getImgWidth();
             int targetHeight = postingType.getImgHeight();
-            int targetX = postingType.getImgStartWidth();
+            int targetX = postingType.getImgX();
             int targetY = 0;
             double originalAspect = (double) originalWidth / originalHeight;
             double targetAspect = (double) targetWidth / targetHeight;
@@ -86,8 +88,8 @@ public class ImageService {
             }
 
             RoundRectangle2D roundedClip = new RoundRectangle2D.Double(
-                    0, 0, postingType.getBoxWidth(), postingType.getBoxHeight(), postingType.getArcWidth(),
-                    postingType.getArcHeight()
+                    0, 0, postingType.getBoxWidth(), postingType.getBoxHeight(), postingType.getBoxArcWidth(),
+                    postingType.getBoxArcHeight()
             );
             Rectangle2D rectClip = new Rectangle2D.Double(
                     targetX, targetY, targetWidth, targetHeight
@@ -121,8 +123,8 @@ public class ImageService {
             svgGenerator.setFont(FontUtils.load_m(postingType.getTitleSize()));
         }
 
-        if (postingType.getTitleStartHeight() >= 0) {
-            int titleStart = (int) (postingType.getTitleStartHeight() + postingType.getTextPadding() * 1.5);
+        if (postingType.getTitleY() >= 0) {
+            int titleStart = (int) (postingType.getTitleY() + postingType.getTextPadding() * 1.5);
             int titleHeight = drawMultilineText(
                     svgGenerator,
                     posting.getTitle(),
@@ -160,24 +162,24 @@ public class ImageService {
         int height = 0;
         if (postingType.getFooterType() == 1) {
             footer = (publishedTime != null && !publishedTime.isEmpty()) ? publishedTime : url;
-            height = (publishedTime != null && !publishedTime.isEmpty()) ? postingType.getPublishedTimeStartHeight()
-                    : postingType.getUrlStartHeight();
+            height = (publishedTime != null && !publishedTime.isEmpty()) ? postingType.getPublishedTimeY()
+                    : postingType.getUrlY();
         } else if (postingType.getFooterType() == 2) {
             footer = (url != null && !url.isEmpty()) ? url : publishedTime;
-            height = (url != null && !url.isEmpty()) ? postingType.getUrlStartHeight()
-                    : postingType.getPublishedTimeStartHeight();
+            height = (url != null && !url.isEmpty()) ? postingType.getUrlY()
+                    : postingType.getPublishedTimeY();
         } else if (postingType.getFooterType() == 0) {
             footer = publishedTime;
-            svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getPublishedTimeStartHeight());
+            svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getPublishedTimeY());
             svgGenerator.setFont(FontUtils.load_b());
             footer = posting.getSiteName();
-            height = postingType.getUrlStartHeight();
+            height = postingType.getUrlY();
         }
         svgGenerator.drawString(footer, postingType.getTextPadding(), height);
     }
 
     private void drawAuthor(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
-        if (postingType.getBlogImageStartHeight() == -1) {
+        if (postingType.getBlogImageY() == -1) {
             return;
         }
         String imageUrl = posting.getBlogImage();
@@ -212,21 +214,21 @@ public class ImageService {
             g2d.dispose();
 
             // 원형 이미지를 svgGenerator에 그리기
-            svgGenerator.drawImage(circularImage, postingType.getTextPadding(), postingType.getBlogImageStartHeight(),
+            svgGenerator.drawImage(circularImage, postingType.getTextPadding(), postingType.getBlogImageY(),
                     null);
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
         }
 
         drawStroke(svgGenerator, 0, postingType.getBoxWidth(),
-                postingType.getBlogImageStartHeight() - postingType.getTextPadding() / 2,
-                postingType.getBlogImageStartHeight() - postingType.getTextPadding() / 2 + 1);
+                postingType.getBlogImageY() - postingType.getTextPadding() / 2,
+                postingType.getBlogImageY() - postingType.getTextPadding() / 2 + 1);
 
         svgGenerator.setFont(FontUtils.load_m());
         String byText = "by ";
         svgGenerator.setPaint(Color.GRAY);
         svgGenerator.drawString(byText, postingType.getTextPadding() + width * 3 / 2,
-                postingType.getBlogImageStartHeight() + height * 2 / 3);
+                postingType.getBlogImageY() + height * 2 / 3);
 
 // 글자 폭 계산 (다음 텍스트의 시작 위치를 정하기 위해)
         FontMetrics metrics = svgGenerator.getFontMetrics();
@@ -236,13 +238,35 @@ public class ImageService {
         String authorText = posting.getAuthor();
         svgGenerator.setPaint(Color.BLACK);
         svgGenerator.drawString(authorText, postingType.getTextPadding() + width * 3 / 2 + byTextWidth,
-                postingType.getBlogImageStartHeight() + height * 2 / 3);
+                postingType.getBlogImageY() + height * 2 / 3);
     }
 
+    private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
+        if (posting.getWatermark() == null || postingType.getWatermarkX() == -1 || postingType.getWatermarkY() == -1) {
+            return;
+        }
+// 워터마크 위치를 설정하기 위한 변환
+        double translateX = postingType.getWatermarkX();
+        double translateY = postingType.getWatermarkY();
 
-    private void drawStroke(SVGGraphics2D svgGenerator, int BOX_WIDTH, int TOTAL_HEIGHT) {
+        // 각 도형의 위치를 변환하여 그리기
+        for (Shape shape : posting.getWatermark()) {
+            AffineTransform transform = new AffineTransform();
+            transform.translate(translateX, translateY);
+            Shape transformedShape = transform.createTransformedShape(shape);
+            svgGenerator.fill(transformedShape);
+        }
+    }
+
+    private void drawStroke(SVGGraphics2D svgGenerator, PostingType postingType) {
         svgGenerator.setPaint(STROKE_COLOR);
-        svgGenerator.draw(new Rectangle2D.Double(0, 0, BOX_WIDTH - 1, TOTAL_HEIGHT - 1));
+
+        RoundRectangle2D stroke = new RoundRectangle2D.Double(
+                0, 0,
+                postingType.getBoxWidth(), postingType.getBoxHeight(),
+                postingType.getBoxArcWidth(), postingType.getBoxArcHeight()
+        );
+        svgGenerator.draw(stroke);
     }
 
     private void drawStroke(SVGGraphics2D svgGenerator, int startX, int endX, int startY, int endY) {

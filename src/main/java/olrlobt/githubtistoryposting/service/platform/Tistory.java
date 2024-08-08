@@ -1,7 +1,11 @@
 package olrlobt.githubtistoryposting.service.platform;
 
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +49,7 @@ public class Tistory implements Blog {
         posting.setBlogImage(getBlogImage(document));
         posting.setAuthor(blogName);
         posting.setSiteName(blogName + ".tistory");
+        posting.setWatermark(createWatermarkShapes(1.5, 3.5));
         return posting;
     }
 
@@ -159,5 +164,16 @@ public class Tistory implements Blog {
             }
         }
         return thumbnail;
+    }
+
+    private static List<Shape> createWatermarkShapes(double radius, double spacing) {
+        List<Shape> shapes = new ArrayList<>();
+        shapes.add(new Ellipse2D.Double(-radius, -radius, radius * 2, radius * 2));
+        shapes.add(new Ellipse2D.Double(spacing - radius, -radius, radius * 2, radius * 2));
+        shapes.add(new Ellipse2D.Double(spacing - radius, spacing - radius, radius * 2, radius * 2));
+        shapes.add(new Ellipse2D.Double(spacing - radius, 2 * spacing - radius, radius * 2, radius * 2));
+        shapes.add(new Ellipse2D.Double(2 * spacing - radius, -radius, radius * 2, radius * 2));
+
+        return shapes;
     }
 }
