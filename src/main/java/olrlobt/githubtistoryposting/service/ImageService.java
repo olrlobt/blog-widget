@@ -12,15 +12,22 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import olrlobt.githubtistoryposting.domain.PostingBase;
+import org.apache.batik.bridge.BridgeContext;
+import org.apache.batik.bridge.GVTBuilder;
+import org.apache.batik.bridge.UserAgentAdapter;
+import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.BlogInfo;
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.SvgUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.svg.SVGDocument;
 
 @Service
 @Slf4j
@@ -31,32 +38,32 @@ public class ImageService {
 
     public byte[] createSvgImageBox(Posting posting) throws IOException {
         SVGGraphics2D svgGenerator = SvgUtils.init();
-        PostingType postingType = posting.getPostingType();
-        svgGenerator.setSVGCanvasSize(new java.awt.Dimension(postingType.getBoxWidth(), postingType.getBoxHeight()));
-        drawBackground(svgGenerator, postingType);
-        drawThumbnail(posting, svgGenerator, posting.getPostingType());
-        drawText(posting, svgGenerator, posting.getPostingType());
-        drawFooter(posting, svgGenerator, postingType);
-        drawAuthor(posting, svgGenerator, postingType);
-        drawWatermark(posting, svgGenerator, postingType);
-        drawStroke(svgGenerator, postingType);
+        PostingBase postingBase = posting.getPostingBase();
+        svgGenerator.setSVGCanvasSize(new java.awt.Dimension(postingBase.getBoxWidth(), postingBase.getBoxHeight()));
+        drawBackground(svgGenerator, postingBase);
+        drawThumbnail(posting, svgGenerator, posting.getPostingBase());
+        drawText(posting, svgGenerator, posting.getPostingBase());
+        drawFooter(posting, svgGenerator, postingBase);
+        drawAuthor(posting, svgGenerator, postingBase);
+        drawWatermark(posting, svgGenerator, postingBase);
+        drawStroke(svgGenerator, postingBase);
 
         return SvgUtils.toByte(svgGenerator);
     }
 
-    private void drawBackground(SVGGraphics2D svgGenerator, PostingType postingType) {
+    private void drawBackground(SVGGraphics2D svgGenerator, PostingBase postingBase) {
         svgGenerator.setPaint(Color.WHITE);
 
         RoundRectangle2D background = new RoundRectangle2D.Double(
                 0, 0,
-                postingType.getBoxWidth(), postingType.getBoxHeight(),
-                postingType.getBoxArcWidth(), postingType.getBoxArcHeight()
+                postingBase.getBoxWidth(), postingBase.getBoxHeight(),
+                postingBase.getBoxArcWidth(), postingBase.getBoxArcHeight()
         );
         svgGenerator.fill(background);
 //        svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
     }
 
-    private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
+    private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
         String imageUrl = posting.getThumbnail();
         if (imageUrl == null || imageUrl.isEmpty()) {
             imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
@@ -67,9 +74,9 @@ public class ImageService {
             int originalWidth = originalImage.getWidth();
             int originalHeight = originalImage.getHeight();
 
-            int targetWidth = postingType.getImgWidth();
-            int targetHeight = postingType.getImgHeight();
-            int targetX = postingType.getImgX();
+            int targetWidth = postingBase.getImgWidth();
+            int targetHeight = postingBase.getImgHeight();
+            int targetX = postingBase.getImgX();
             int targetY = 0;
             double originalAspect = (double) originalWidth / originalHeight;
             double targetAspect = (double) targetWidth / targetHeight;
@@ -88,8 +95,8 @@ public class ImageService {
             }
 
             RoundRectangle2D roundedClip = new RoundRectangle2D.Double(
-                    0, 0, postingType.getBoxWidth(), postingType.getBoxHeight(), postingType.getBoxArcWidth(),
-                    postingType.getBoxArcHeight()
+                    0, 0, postingBase.getBoxWidth(), postingBase.getBoxHeight(), postingBase.getBoxArcWidth(),
+                    postingBase.getBoxArcHeight()
             );
             Rectangle2D rectClip = new Rectangle2D.Double(
                     targetX, targetY, targetWidth, targetHeight
@@ -115,42 +122,43 @@ public class ImageService {
         }
     }
 
-    private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
-        svgGenerator.setPaint(Color.BLACK);
-        if (postingType.getTitleWeight() == 1) {
-            svgGenerator.setFont(FontUtils.load_b(postingType.getTitleSize()));
-        } else {
-            svgGenerator.setFont(FontUtils.load_m(postingType.getTitleSize()));
+    private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        if (postingBase.getTitleY() == -1) {
+            return;
         }
 
-        if (postingType.getTitleY() >= 0) {
-            int titleStart = (int) (postingType.getTitleY() + postingType.getTextPadding() * 1.5);
-            int titleHeight = drawMultilineText(
-                    svgGenerator,
-                    posting.getTitle(),
-                    postingType.getTextPadding(),
-                    titleStart,
-                    postingType.getTitleWidth() - postingType.getTextPadding() * 2,
-                    postingType.getTitleMaxLine(),
-                    svgGenerator.getFont()
-            );
+        svgGenerator.setPaint(Color.BLACK);
+        if (postingBase.getTitleWeight() == 1) {
+            svgGenerator.setFont(FontUtils.load_b(postingBase.getTitleSize()));
+        } else {
+            svgGenerator.setFont(FontUtils.load_m(postingBase.getTitleSize()));
+        }
 
-            if (postingType.getContentMaxLine() != -1 && !posting.getContent().isEmpty()) {
-                drawMultilineText(
-                        svgGenerator,
-                        posting.getContent(),
-                        postingType.getTextPadding(),
-                        titleHeight,
-                        postingType.getTitleWidth() - postingType.getTextPadding() * 2,
-                        postingType.getContentMaxLine(),
-                        FontUtils.load_m(postingType.getContentSize())
-                );
-            }
+        int titleHeight = drawMultilineText(
+                svgGenerator,
+                posting.getTitle(),
+                postingBase.getTextPadding(),
+                postingBase.getTitleY(),
+                postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
+                postingBase.getTitleMaxLine(),
+                svgGenerator.getFont()
+        );
+
+        if (postingBase.getContentMaxLine() != -1 && !posting.getContent().isEmpty()) {
+            drawMultilineText(
+                    svgGenerator,
+                    posting.getContent(),
+                    postingBase.getTextPadding(),
+                    titleHeight,
+                    postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
+                    postingBase.getContentMaxLine(),
+                    FontUtils.load_m(postingBase.getContentSize())
+            );
         }
     }
 
-    private static void drawFooter(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
-        if (postingType.getFooterType() == -1) {
+    private static void drawFooter(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        if (postingBase.getFooterType() == -1) {
             return;
         }
 
@@ -160,26 +168,26 @@ public class ImageService {
         String publishedTime = posting.getPublishedTime();
         String url = posting.getUrl();
         int height = 0;
-        if (postingType.getFooterType() == 1) {
+        if (postingBase.getFooterType() == 1) {
             footer = (publishedTime != null && !publishedTime.isEmpty()) ? publishedTime : url;
-            height = (publishedTime != null && !publishedTime.isEmpty()) ? postingType.getPublishedTimeY()
-                    : postingType.getUrlY();
-        } else if (postingType.getFooterType() == 2) {
+            height = (publishedTime != null && !publishedTime.isEmpty()) ? postingBase.getPublishedTimeY()
+                    : postingBase.getUrlY();
+        } else if (postingBase.getFooterType() == 2) {
             footer = (url != null && !url.isEmpty()) ? url : publishedTime;
-            height = (url != null && !url.isEmpty()) ? postingType.getUrlY()
-                    : postingType.getPublishedTimeY();
-        } else if (postingType.getFooterType() == 0) {
+            height = (url != null && !url.isEmpty()) ? postingBase.getUrlY()
+                    : postingBase.getPublishedTimeY();
+        } else if (postingBase.getFooterType() == 0) {
             footer = publishedTime;
-            svgGenerator.drawString(footer, postingType.getTextPadding(), postingType.getPublishedTimeY());
+            svgGenerator.drawString(footer, postingBase.getTextPadding(), postingBase.getPublishedTimeY());
             svgGenerator.setFont(FontUtils.load_b());
             footer = posting.getSiteName();
-            height = postingType.getUrlY();
+            height = postingBase.getUrlY();
         }
-        svgGenerator.drawString(footer, postingType.getTextPadding(), height);
+        svgGenerator.drawString(footer, postingBase.getTextPadding(), height);
     }
 
-    private void drawAuthor(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
-        if (postingType.getBlogImageY() == -1) {
+    private void drawAuthor(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        if (postingBase.getBlogImageY() == -1) {
             return;
         }
         String imageUrl = posting.getBlogImage();
@@ -214,21 +222,21 @@ public class ImageService {
             g2d.dispose();
 
             // 원형 이미지를 svgGenerator에 그리기
-            svgGenerator.drawImage(circularImage, postingType.getTextPadding(), postingType.getBlogImageY(),
+            svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImageY(),
                     null);
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
         }
 
-        drawStroke(svgGenerator, 0, postingType.getBoxWidth(),
-                postingType.getBlogImageY() - postingType.getTextPadding() / 2,
-                postingType.getBlogImageY() - postingType.getTextPadding() / 2 + 1);
+        drawStroke(svgGenerator, 0, postingBase.getBoxWidth(),
+                postingBase.getBlogImageY() - postingBase.getTextPadding() / 2,
+                postingBase.getBlogImageY() - postingBase.getTextPadding() / 2 + 1);
 
         svgGenerator.setFont(FontUtils.load_m());
         String byText = "by ";
         svgGenerator.setPaint(Color.GRAY);
-        svgGenerator.drawString(byText, postingType.getTextPadding() + width * 3 / 2,
-                postingType.getBlogImageY() + height * 2 / 3);
+        svgGenerator.drawString(byText, postingBase.getTextPadding() + width * 3 / 2,
+                postingBase.getBlogImageY() + height * 2 / 3);
 
 // 글자 폭 계산 (다음 텍스트의 시작 위치를 정하기 위해)
         FontMetrics metrics = svgGenerator.getFontMetrics();
@@ -237,34 +245,78 @@ public class ImageService {
 // author 부분
         String authorText = posting.getAuthor();
         svgGenerator.setPaint(Color.BLACK);
-        svgGenerator.drawString(authorText, postingType.getTextPadding() + width * 3 / 2 + byTextWidth,
-                postingType.getBlogImageY() + height * 2 / 3);
+        svgGenerator.drawString(authorText, postingBase.getTextPadding() + width * 3 / 2 + byTextWidth,
+                postingBase.getBlogImageY() + height * 2 / 3);
     }
 
-    private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingType postingType) {
-        if (posting.getWatermark() == null || postingType.getWatermarkX() == -1 || postingType.getWatermarkY() == -1) {
+    private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        if (posting.getWatermark() == null || postingBase.getWatermarkX() == -1
+                || postingBase.getWatermarkY() == -1) {
             return;
         }
-// 워터마크 위치를 설정하기 위한 변환
-        double translateX = postingType.getWatermarkX();
-        double translateY = postingType.getWatermarkY();
 
-        // 각 도형의 위치를 변환하여 그리기
-        for (Shape shape : posting.getWatermark()) {
+        // SVG 파일 경로를 가져오기
+        String svgFilePath = posting.getWatermark().getPath();
+        SVGDocument svgDocument = SvgUtils.loadSVGDocument(svgFilePath);
+
+        if (svgDocument != null) {
+            // SVG의 모든 요소의 색상 변경
+            Element svgElement = svgDocument.getDocumentElement();
+            changeSVGColor(svgElement, posting.getWatermark().getColor()); // 예시: 빨간색으로 변경
+
+            // SVG 노드로 변환
+            UserAgentAdapter userAgent = new UserAgentAdapter();
+            BridgeContext bridgeContext = new BridgeContext(userAgent);
+            GraphicsNode svgGraphicsNode = new GVTBuilder().build(bridgeContext, svgDocument);
+
+            // 지정된 크기로 변환
+            double targetWidth = 10; // 원하는 너비
+            double targetHeight = 10; // 원하는 높이
+            AffineTransform scaleTransform = getScaleTransform(svgGraphicsNode, targetWidth, targetHeight);
+
+            // 변환 및 위치 설정
             AffineTransform transform = new AffineTransform();
-            transform.translate(translateX, translateY);
-            Shape transformedShape = transform.createTransformedShape(shape);
-            svgGenerator.fill(transformedShape);
+            transform.translate(postingBase.getWatermarkX(), postingBase.getWatermarkY());
+            transform.concatenate(scaleTransform);
+
+            // 워터마크를 그리기
+            svgGraphicsNode.setTransform(transform);
+            svgGraphicsNode.paint(svgGenerator);
         }
     }
 
-    private void drawStroke(SVGGraphics2D svgGenerator, PostingType postingType) {
+    private void changeSVGColor(Element svgElement, String color) {
+        // 모든 <circle> 요소의 색상 변경 (fill 속성)
+        NodeList circles = svgElement.getElementsByTagName("circle");
+        for (int i = 0; i < circles.getLength(); i++) {
+            Element circle = (Element) circles.item(i);
+            circle.setAttribute("fill", color);
+        }
+
+        // 추가로 다른 요소들도 색상 변경 적용 가능
+        // 예: 모든 <path>, <rect> 등 요소의 색상 변경
+        NodeList paths = svgElement.getElementsByTagName("path");
+        for (int i = 0; i < paths.getLength(); i++) {
+            Element path = (Element) paths.item(i);
+            path.setAttribute("fill", color);
+        }
+    }
+
+    private AffineTransform getScaleTransform(GraphicsNode svgGraphicsNode, double targetWidth, double targetHeight) {
+        double originalWidth = svgGraphicsNode.getPrimitiveBounds().getWidth();
+        double originalHeight = svgGraphicsNode.getPrimitiveBounds().getHeight();
+        double scaleX = targetWidth / originalWidth;
+        double scaleY = targetHeight / originalHeight;
+        return AffineTransform.getScaleInstance(scaleX, scaleY);
+    }
+
+    private void drawStroke(SVGGraphics2D svgGenerator, PostingBase postingBase) {
         svgGenerator.setPaint(STROKE_COLOR);
 
         RoundRectangle2D stroke = new RoundRectangle2D.Double(
                 0, 0,
-                postingType.getBoxWidth(), postingType.getBoxHeight(),
-                postingType.getBoxArcWidth(), postingType.getBoxArcHeight()
+                postingBase.getBoxWidth(), postingBase.getBoxHeight(),
+                postingBase.getBoxArcWidth(), postingBase.getBoxArcHeight()
         );
         svgGenerator.draw(stroke);
     }

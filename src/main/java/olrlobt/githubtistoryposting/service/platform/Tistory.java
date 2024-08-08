@@ -1,14 +1,13 @@
 package olrlobt.githubtistoryposting.service.platform;
 
-import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
+import java.awt.Color;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.domain.Watermark;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -18,10 +17,9 @@ import org.springframework.web.servlet.view.RedirectView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.BlogInfo;
-import olrlobt.githubtistoryposting.domain.BlogTag;
+import olrlobt.githubtistoryposting.domain.TistoryTheme;
 import olrlobt.githubtistoryposting.domain.ImageSize;
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.ScrapingUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
@@ -34,10 +32,10 @@ public class Tistory implements Blog {
     private final ScrapingUtils scrapingUtils;
 
     @Override
-    public Posting posting(String blogName, int index, PostingType postingType) throws IOException {
+    public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
         int page = 1;
         Document firstDocument = scrapingUtils.byUrl(createUrl(blogName, page));
-        BlogTag theme = findTistoryTheme(firstDocument);
+        TistoryTheme theme = findTistoryTheme(firstDocument);
 
         int postingOfPage = getPostingOfPageNum(firstDocument, theme);
         page += index / postingOfPage;
@@ -45,11 +43,11 @@ public class Tistory implements Blog {
         Document document = scrapingUtils.byUrl(url);
 
         Elements postings = document.select(theme.getPostingList());
-        Posting posting = findPosting(postings, index % postingOfPage, theme, postingType, url);
+        Posting posting = findPosting(postings, index % postingOfPage, theme, postingBase, url);
         posting.setBlogImage(getBlogImage(document));
         posting.setAuthor(blogName);
         posting.setSiteName(blogName + ".tistory");
-        posting.setWatermark(createWatermarkShapes(1.5, 3.5));
+        posting.setWatermark(new Watermark("src/main/resources/static/img/tistory.svg", "#ec6552"));
         return posting;
     }
 
@@ -57,7 +55,7 @@ public class Tistory implements Blog {
     public RedirectView link(String blogName, int index) throws IOException {
         int page = 1;
         Document firstDocument = scrapingUtils.byUrl(createUrl(blogName, page));
-        BlogTag theme = findTistoryTheme(firstDocument);
+        TistoryTheme theme = findTistoryTheme(firstDocument);
 
         int postingOfPage = getPostingOfPageNum(firstDocument, theme);
         page += index / postingOfPage;
@@ -87,7 +85,7 @@ public class Tistory implements Blog {
         String footer = document.select(BlogInfo.TISTORY.getBlogUrl())
                 .attr("content");
 
-        return new Posting(resizeThumbnail, title, "", "", footer, PostingType.BlogInfo);
+        return new Posting(resizeThumbnail, title, "", "", footer, PostingBase.BlogInfo);
     }
 
     private static String createUrl(String blogName, int page) {
@@ -101,7 +99,7 @@ public class Tistory implements Blog {
     /**
      * Tistory 테마 찾기
      */
-    private BlogTag findTistoryTheme(Document document) {
+    private TistoryTheme findTistoryTheme(Document document) {
         String themeIndex = document.selectFirst("body").className().split(" ")[0];
         if (themeIndex.isEmpty()) {
             themeIndex = document.selectFirst("html").id();
@@ -109,23 +107,23 @@ public class Tistory implements Blog {
                 themeIndex = document.selectFirst(".emph_t").text();
             }
         }
-        return BlogTag.findTheme(themeIndex);
+        return TistoryTheme.findTheme(themeIndex);
     }
 
-    private int getPostingOfPageNum(Document document, BlogTag theme) {
+    private int getPostingOfPageNum(Document document, TistoryTheme theme) {
         Elements postings = document.select(theme.getPostingList());
         return postings.size();
     }
 
-    private Posting findPosting(Elements postings, int index, BlogTag theme, PostingType postingType,
+    private Posting findPosting(Elements postings, int index, TistoryTheme theme, PostingBase postingBase,
                                 String url) {
         if (index >= postings.size()) {
             return Posting.createNoPosting();
         }
-        return makePosting(postings.get(index), theme, postingType, url);
+        return makePosting(postings.get(index), theme, postingBase, url);
     }
 
-    private Posting makePosting(Element posting, BlogTag theme, PostingType postingType, String url) {
+    private Posting makePosting(Element posting, TistoryTheme theme, PostingBase postingBase, String url) {
         String thumbnail = findThumbnail(posting, theme.getPostingThumb());
         String title = posting.select(theme.getPostingTitle()).text();
         String content = posting.select(theme.getPostingContent()).text();
@@ -134,7 +132,7 @@ public class Tistory implements Blog {
         if (questionMarkIndex != -1) {
             url = url.substring(0, questionMarkIndex);
         }
-        return new Posting(thumbnail, title, content, date, url,  postingType);
+        return new Posting(thumbnail, title, content, date, url, postingBase);
     }
 
     private static String findThumbnail(Element posting, String themeTag) {
@@ -164,16 +162,5 @@ public class Tistory implements Blog {
             }
         }
         return thumbnail;
-    }
-
-    private static List<Shape> createWatermarkShapes(double radius, double spacing) {
-        List<Shape> shapes = new ArrayList<>();
-        shapes.add(new Ellipse2D.Double(-radius, -radius, radius * 2, radius * 2));
-        shapes.add(new Ellipse2D.Double(spacing - radius, -radius, radius * 2, radius * 2));
-        shapes.add(new Ellipse2D.Double(spacing - radius, spacing - radius, radius * 2, radius * 2));
-        shapes.add(new Ellipse2D.Double(spacing - radius, 2 * spacing - radius, radius * 2, radius * 2));
-        shapes.add(new Ellipse2D.Double(2 * spacing - radius, -radius, radius * 2, radius * 2));
-
-        return shapes;
     }
 }

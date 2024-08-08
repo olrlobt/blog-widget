@@ -1,15 +1,20 @@
 package olrlobt.githubtistoryposting.utils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
+import org.w3c.dom.svg.SVGDocument;
 
 public class SvgUtils {
 
@@ -28,5 +33,16 @@ public class SvgUtils {
 		svgGenerator.stream(out, true);
 		out.close();
 		return outputStream.toByteArray();
+	}
+
+	public static SVGDocument loadSVGDocument(String filePath) {
+		try (InputStream inputStream = new FileInputStream(filePath)) {
+			String parser = XMLResourceDescriptor.getXMLParserClassName();
+			SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser);
+			return factory.createSVGDocument(filePath, inputStream);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

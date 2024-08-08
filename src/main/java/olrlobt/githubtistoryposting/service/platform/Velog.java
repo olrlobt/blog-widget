@@ -1,14 +1,16 @@
 package olrlobt.githubtistoryposting.service.platform;
 
+import java.awt.Color;
 import java.util.Map;
 
+import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.domain.Watermark;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
 
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.domain.PostingType;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 
@@ -26,7 +28,7 @@ public class Velog implements Blog {
     private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile {  thumbnail }}}";
 
     @Override
-    public Posting posting(String blogName, int index, PostingType postingType) {
+    public Posting posting(String blogName, int index, PostingBase postingBase) {
         Map<String, Object> variables = Map.of(
                 "username", blogName,
                 "limit", index + 1
@@ -35,8 +37,12 @@ public class Velog implements Blog {
         VelogResponse response = request(QUERY_POSTING, variables);
         VelogResponse.Post post = response.getData().getPosts().get(index);
         String encodedUrlSlug = UrlUtils.decodeByKorean(post.getUrl_slug());
-        return new Posting(post.getThumbnail(), post.getTitle(), "", DateUtils.parser(post.getReleased_at()), encodedUrlSlug,
-                postingType);
+        Posting posting = new Posting(post.getThumbnail(), post.getTitle(), "", DateUtils.parser(post.getReleased_at()),
+                encodedUrlSlug,
+                postingBase);
+        posting.setWatermark(new Watermark("src/main/resources/static/img/velog.svg", "#5fc69a"));
+        posting.setSiteName(blogName + ".log");
+        return posting;
     }
 
     @Override
@@ -64,9 +70,9 @@ public class Velog implements Blog {
         if (thumbnail != null) {
             String location = thumbnail.substring(0, thumbnail.lastIndexOf("/"));
             String param = UrlUtils.encodeByKorean(thumbnail.substring(thumbnail.lastIndexOf("/")));
-            return new Posting(location + param, username, "", "", createVelog(blogName, ""), PostingType.BlogInfo);
+            return new Posting(location + param, username, "", "", createVelog(blogName, ""), PostingBase.BlogInfo);
         }
-        return new Posting(thumbnail, username, "", "", createVelog(blogName, ""), PostingType.BlogInfo);
+        return new Posting(thumbnail, username, "", "", createVelog(blogName, ""), PostingBase.BlogInfo);
     }
 
     private VelogResponse request(String query, Map<String, Object> variables) {

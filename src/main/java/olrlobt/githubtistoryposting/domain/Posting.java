@@ -1,8 +1,6 @@
 package olrlobt.githubtistoryposting.domain;
 
-import java.awt.Shape;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,35 +21,35 @@ public class Posting {
     private String url;
     @Setter
     private String siteName;
-    private final PostingType postingType;
+    private final PostingBase postingBase;
     @Setter
-    private List<Shape> watermark;
+    private Watermark watermark;
 
     public Posting(String thumbnail, String title, String content, LocalDate publishedTime, String url,
-                   PostingType postingType) {
+                   PostingBase postingBase) {
         this.thumbnail = thumbnail;
         this.title = title;
         this.content = content;
         this.publishedTime = DateUtils.toString(publishedTime);
         this.url = url;
-        this.postingType = postingType;
+        this.postingBase = postingBase;
     }
 
     public Posting(String thumbnail, String title, String content, String publishedTime, String url,
-                   PostingType postingType) {
+                   PostingBase postingBase) {
         this.thumbnail = thumbnail;
         this.title = title;
         this.content = content;
         this.publishedTime = publishedTime;
         this.url = url;
-        this.postingType = postingType;
+        this.postingBase = postingBase;
     }
 
     public static Posting createNoPosting() {
         String thumbnail = BlogInfo.NOT_FOUND.getBlogThumb();
         String title = BlogInfo.NOT_FOUND.getBlogName();
         String url = BlogInfo.NOT_FOUND.getBlogUrl();
-        return new Posting(thumbnail, title, "", "", url, PostingType.BlogPosting);
+        return new Posting(thumbnail, title, "", "", url, PostingBase.BlogPosting);
     }
 
     @Override

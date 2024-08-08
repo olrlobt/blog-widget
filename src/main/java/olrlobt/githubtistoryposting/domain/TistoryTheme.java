@@ -6,7 +6,7 @@ import java.util.Map;
 import lombok.Getter;
 
 @Getter
-public enum BlogTag {
+public enum TistoryTheme {
 	Odyssey("headerslogundisplayon", "article", ".title", ".date", "img", ".summary", ".article-content .link-article"),
 	Poster("color-gray", ".post-item", ".title", "head meta[property=og:image]", "img",".excerpt" , ".post-item a"),
 	Whatever("layout-wide", ".post-item", ".title", "head meta[property=og:image]", "img", ".excerpt", ".post-item a"),
@@ -27,18 +27,18 @@ public enum BlogTag {
 	private final String postingThumb;
 	private final String postingContent;
 	private final String postingLink;
-	private static final Map<String, BlogTag> blogTags;
+	private static final Map<String, TistoryTheme> blogTags;
 
 	static {
 		blogTags = new HashMap<>();
-		for (BlogTag tag : values()) {
+		for (TistoryTheme tag : values()) {
 			blogTags.put(tag.getBlogTheme(), tag);
 		}
 	}
 
-	BlogTag(String blogTheme, String postingList, String postingTitle, String postingDate, String postingThumb,
-            String postingContent,
-            String postingLink) {
+	TistoryTheme(String blogTheme, String postingList, String postingTitle, String postingDate, String postingThumb,
+				 String postingContent,
+				 String postingLink) {
 		this.blogTheme = blogTheme;
 		this.postingList = postingList;
 		this.postingTitle = postingTitle;
@@ -48,7 +48,7 @@ public enum BlogTag {
         this.postingLink = postingLink;
 	}
 
-	public static BlogTag findTheme(String blogTheme) {
+	public static TistoryTheme findTheme(String blogTheme) {
 		return blogTags.get(blogTheme);
 	}
 }

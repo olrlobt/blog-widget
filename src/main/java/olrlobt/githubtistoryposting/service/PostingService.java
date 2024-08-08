@@ -4,7 +4,7 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.domain.PostingType;
+import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.service.platform.Blog;
 import olrlobt.githubtistoryposting.service.platform.BlogFactory;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class PostingService {
 
 	public Posting posting(String blogName, String platform, int index, String theme) throws IOException {
 		Blog blog = blogFactory.getBlog(platform);
-		PostingType themeName = PostingType.getTheme(theme);
+		PostingBase themeName = PostingBase.getTheme(theme);
 		return blog.posting(blogName, index, themeName);
 	}
 
