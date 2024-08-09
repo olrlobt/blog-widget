@@ -1,6 +1,12 @@
 package olrlobt.githubtistoryposting.service;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
@@ -9,22 +15,20 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-
 import javax.imageio.ImageIO;
-
+import lombok.extern.slf4j.Slf4j;
+import olrlobt.githubtistoryposting.domain.BlogInfo;
+import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.utils.FontUtils;
+import olrlobt.githubtistoryposting.utils.SvgUtils;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.bridge.UserAgentAdapter;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
-import olrlobt.githubtistoryposting.domain.BlogInfo;
-import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.utils.FontUtils;
-import olrlobt.githubtistoryposting.utils.SvgUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGDocument;
@@ -201,8 +205,6 @@ public class ImageService {
 
         try {
             BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
-
-            // 원형 마스크 생성
             BufferedImage mask = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2dMask = mask.createGraphics();
             g2dMask.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -210,7 +212,6 @@ public class ImageService {
             g2dMask.fillOval(0, 0, width, height);
             g2dMask.dispose();
 
-            // 원형 마스크를 적용한 이미지 생성
             BufferedImage circularImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = circularImage.createGraphics();
 
@@ -221,7 +222,6 @@ public class ImageService {
             g2d.drawImage(mask, 0, 0, null);
             g2d.dispose();
 
-            // 원형 이미지를 svgGenerator에 그리기
             svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImageY(),
                     null);
         } catch (IOException e) {
@@ -238,11 +238,9 @@ public class ImageService {
         svgGenerator.drawString(byText, postingBase.getTextPadding() + width * 3 / 2,
                 postingBase.getBlogImageY() + height * 2 / 3);
 
-// 글자 폭 계산 (다음 텍스트의 시작 위치를 정하기 위해)
         FontMetrics metrics = svgGenerator.getFontMetrics();
         int byTextWidth = metrics.stringWidth(byText);
 
-// author 부분
         String authorText = posting.getAuthor();
         svgGenerator.setPaint(Color.BLACK);
         svgGenerator.drawString(authorText, postingBase.getTextPadding() + width * 3 / 2 + byTextWidth,
@@ -255,35 +253,30 @@ public class ImageService {
             return;
         }
 
-        // SVG 파일 경로를 가져오기
-        String svgFilePath = posting.getWatermark().getPath();
-        SVGDocument svgDocument = SvgUtils.loadSVGDocument(svgFilePath);
+        Resource svgResource = posting.getWatermark().getResource();
+        SVGDocument svgDocument = SvgUtils.loadSVGDocument(svgResource);
 
         if (svgDocument != null) {
-            // SVG의 모든 요소의 색상 변경
             Element svgElement = svgDocument.getDocumentElement();
-            changeSVGColor(svgElement, posting.getWatermark().getColor()); // 예시: 빨간색으로 변경
+            changeSVGColor(svgElement, posting.getWatermark().getColor());
 
-            // SVG 노드로 변환
             UserAgentAdapter userAgent = new UserAgentAdapter();
             BridgeContext bridgeContext = new BridgeContext(userAgent);
             GraphicsNode svgGraphicsNode = new GVTBuilder().build(bridgeContext, svgDocument);
 
-            // 지정된 크기로 변환
-            double targetWidth = 10; // 원하는 너비
-            double targetHeight = 10; // 원하는 높이
-            AffineTransform scaleTransform = getScaleTransform(svgGraphicsNode, targetWidth, targetHeight);
+            AffineTransform scaleTransform = getScaleTransform(svgGraphicsNode,
+                    posting.getPostingBase().getWatermarkWidth(),
+                    posting.getPostingBase().getWatermarkHeight());
 
-            // 변환 및 위치 설정
             AffineTransform transform = new AffineTransform();
             transform.translate(postingBase.getWatermarkX(), postingBase.getWatermarkY());
             transform.concatenate(scaleTransform);
 
-            // 워터마크를 그리기
             svgGraphicsNode.setTransform(transform);
             svgGraphicsNode.paint(svgGenerator);
         }
     }
+
 
     private void changeSVGColor(Element svgElement, String color) {
         // 모든 <circle> 요소의 색상 변경 (fill 속성)

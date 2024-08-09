@@ -12,6 +12,7 @@ import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.util.XMLResourceDescriptor;
+import org.springframework.core.io.Resource;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.svg.SVGDocument;
@@ -35,13 +36,12 @@ public class SvgUtils {
 		return outputStream.toByteArray();
 	}
 
-	public static SVGDocument loadSVGDocument(String filePath) {
-		try (InputStream inputStream = new FileInputStream(filePath)) {
+	public static SVGDocument loadSVGDocument(Resource resource) {
+		try (InputStream inputStream = resource.getInputStream()) {
 			String parser = XMLResourceDescriptor.getXMLParserClassName();
 			SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser);
-			return factory.createSVGDocument(filePath, inputStream);
+			return factory.createSVGDocument(null, inputStream);
 		} catch (Exception e) {
-			e.printStackTrace();
 			return null;
 		}
 	}

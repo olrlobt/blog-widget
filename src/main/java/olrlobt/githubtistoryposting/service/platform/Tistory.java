@@ -1,28 +1,27 @@
 package olrlobt.githubtistoryposting.service.platform;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import olrlobt.githubtistoryposting.domain.PostingBase;
-import olrlobt.githubtistoryposting.domain.Watermark;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.view.RedirectView;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.BlogInfo;
-import olrlobt.githubtistoryposting.domain.TistoryTheme;
 import olrlobt.githubtistoryposting.domain.ImageSize;
 import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.domain.TistoryTheme;
+import olrlobt.githubtistoryposting.domain.Watermark;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.ScrapingUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Slf4j
 @Component
@@ -30,6 +29,8 @@ import olrlobt.githubtistoryposting.utils.UrlUtils;
 public class Tistory implements Blog {
 
     private final ScrapingUtils scrapingUtils;
+    @Value("classpath:static/img/tistory.svg")
+    private Resource watermark;
 
     @Override
     public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
@@ -47,7 +48,7 @@ public class Tistory implements Blog {
         posting.setBlogImage(getBlogImage(document));
         posting.setAuthor(blogName);
         posting.setSiteName(blogName + ".tistory");
-        posting.setWatermark(new Watermark("src/main/resources/static/img/tistory.svg", "#ec6552"));
+        posting.setWatermark(new Watermark(watermark, "#ec6552"));
         return posting;
     }
 

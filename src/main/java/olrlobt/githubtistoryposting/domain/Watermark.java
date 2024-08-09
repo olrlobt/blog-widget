@@ -3,6 +3,7 @@ package olrlobt.githubtistoryposting.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -10,6 +11,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Watermark {
-    private String path;
+    private Resource resource;
     private String color;
 }

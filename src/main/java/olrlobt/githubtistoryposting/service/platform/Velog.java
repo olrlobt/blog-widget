@@ -1,18 +1,18 @@
 package olrlobt.githubtistoryposting.service.platform;
 
-import java.awt.Color;
+import java.io.IOException;
 import java.util.Map;
-
+import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.Watermark;
+import olrlobt.githubtistoryposting.utils.DateUtils;
+import olrlobt.githubtistoryposting.utils.UrlUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
-
-import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.utils.DateUtils;
-import olrlobt.githubtistoryposting.utils.UrlUtils;
 
 @Component
 public class Velog implements Blog {
@@ -26,9 +26,12 @@ public class Velog implements Blog {
                     + "{url_slug title thumbnail released_at comments_count tags likes}}";
     private final String QUERY_LINK = "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) { url_slug }}";
     private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile {  thumbnail }}}";
+    @Value("classpath:static/img/velog.svg")
+    private Resource watermark;
+
 
     @Override
-    public Posting posting(String blogName, int index, PostingBase postingBase) {
+    public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
         Map<String, Object> variables = Map.of(
                 "username", blogName,
                 "limit", index + 1
@@ -40,7 +43,7 @@ public class Velog implements Blog {
         Posting posting = new Posting(post.getThumbnail(), post.getTitle(), "", DateUtils.parser(post.getReleased_at()),
                 encodedUrlSlug,
                 postingBase);
-        posting.setWatermark(new Watermark("src/main/resources/static/img/velog.svg", "#5fc69a"));
+        posting.setWatermark(new Watermark(watermark, "#5fc69a"));
         posting.setSiteName(blogName + ".log");
         return posting;
     }
