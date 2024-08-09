@@ -3,6 +3,7 @@ package olrlobt.githubtistoryposting.service.platform;
 import java.io.IOException;
 
 import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.utils.UrlUtils;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.RedirectView;
@@ -28,7 +29,9 @@ public class Anything implements Blog {
         String content = document.select("head meta[property=og:description]").attr("content");
         String publishedTime = document.select("head meta[property=article:published_time]").attr("content");
 
-        return new Posting(thumb, title, content, DateUtils.parser(publishedTime), url, postingBase);
+        Posting posting = new Posting(thumb, title, content, DateUtils.parser(publishedTime), url, postingBase);
+        posting.setSiteName(UrlUtils.getSiteName(url));
+        return posting;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package olrlobt.githubtistoryposting.utils;
 
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +36,24 @@ public class UrlUtils {
 
 	public static String decodeByKorean(String target){
 		return URLDecoder.decode(target, StandardCharsets.UTF_8);
+	}
+
+	public static String getSiteName(String urlString) {
+		try {
+			URL url = new URL(urlString);
+			String host = url.getHost();
+
+			// www. 또는 m. 같은 서브도메인을 제거하여 주요 도메인만 남기기
+			if (host.startsWith("www.")) {
+				host = host.substring(4);
+			} else if (host.startsWith("m.")) {
+				host = host.substring(2);
+			}
+
+			return host;
+		} catch (Exception e) {
+			return "";
+		}
 	}
 
 }
