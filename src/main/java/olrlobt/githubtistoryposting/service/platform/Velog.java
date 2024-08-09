@@ -20,10 +20,9 @@ public class Velog implements Blog {
     private final WebClient WEB_CLIENT = WebClient.builder()
             .baseUrl("https://v2.velog.io/graphql")
             .build();
-
     private final String QUERY_POSTING =
             "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) "
-                    + "{url_slug title thumbnail released_at comments_count tags likes}}";
+                    + "{url_slug title thumbnail short_description released_at comments_count tags likes}}";
     private final String QUERY_LINK = "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) { url_slug }}";
     private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile {  thumbnail }}}";
     @Value("classpath:static/img/velog.svg")
@@ -39,8 +38,9 @@ public class Velog implements Blog {
 
         VelogResponse response = request(QUERY_POSTING, variables);
         VelogResponse.Post post = response.getData().getPosts().get(index);
-        String encodedUrlSlug = UrlUtils.decodeByKorean(post.getUrl_slug());
-        Posting posting = new Posting(post.getThumbnail(), post.getTitle(), "", DateUtils.parser(post.getReleased_at()),
+        String encodedUrlSlug = "velog.io/@" + blogName;
+        Posting posting = new Posting(post.getThumbnail(), post.getTitle(), post.getShort_description(),
+                DateUtils.parser(post.getReleased_at()),
                 encodedUrlSlug,
                 postingBase);
         posting.setWatermark(new Watermark(watermark, "#5fc69a"));

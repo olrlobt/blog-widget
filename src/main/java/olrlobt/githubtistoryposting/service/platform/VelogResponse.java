@@ -20,6 +20,7 @@ public class VelogResponse {
 	public static class Post {
 		private String title;
 		private String thumbnail;
+		private String short_description;
 		private String url_slug;
 		private String released_at;
 		private int comments_count;
