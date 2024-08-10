@@ -27,6 +27,7 @@ import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.bridge.UserAgentAdapter;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
@@ -38,7 +39,11 @@ import org.w3c.dom.svg.SVGDocument;
 public class ImageService {
     private final String TRUNCATE = "...";
     private final Color STROKE_COLOR = Color.decode("#d0d7de");
-//    private final Color STROKE_COLOR = new Color(139, 139, 139, 34);
+    //    private final Color STROKE_COLOR = new Color(139, 139, 139, 34);
+    @Value("classpath:static/img/No_Image.jpg")
+    private Resource NO_IMAGE;
+    @Value("classpath:static/img/No_Profile.webp")
+    private Resource NO_PROFILE;
 
     public byte[] createSvgImageBox(Posting posting) throws IOException {
         SVGGraphics2D svgGenerator = SvgUtils.init();

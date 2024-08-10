@@ -22,9 +22,9 @@ public class Velog implements Blog {
             .build();
     private final String QUERY_POSTING =
             "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) "
-                    + "{url_slug title thumbnail short_description released_at comments_count tags likes}}";
+                    + "{url_slug title user { id  username  profile { thumbnail }} thumbnail short_description released_at comments_count tags likes}}";
     private final String QUERY_LINK = "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) { url_slug }}";
-    private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile {  thumbnail }}}";
+    private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile { thumbnail }}}";
     @Value("classpath:static/img/velog.svg")
     private Resource watermark;
 
@@ -45,6 +45,8 @@ public class Velog implements Blog {
                 postingBase);
         posting.setWatermark(new Watermark(watermark, "#5fc69a"));
         posting.setSiteName(blogName + ".log");
+        posting.setAuthor(post.getUser().getUsername());
+        posting.setBlogImage(UrlUtils.encodeLastPathSegment(post.getUser().getProfile().getThumbnail()));
         return posting;
     }
 

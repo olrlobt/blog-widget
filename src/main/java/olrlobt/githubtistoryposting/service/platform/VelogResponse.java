@@ -26,6 +26,7 @@ public class VelogResponse {
 		private int comments_count;
 		private List<String> tags;
 		private int likes;
+		private User user;
 	}
 
 	@Getter
