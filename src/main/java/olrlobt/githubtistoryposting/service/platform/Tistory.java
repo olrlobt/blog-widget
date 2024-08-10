@@ -1,5 +1,6 @@
 package olrlobt.githubtistoryposting.service.platform;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.regex.Matcher;
@@ -14,6 +15,7 @@ import olrlobt.githubtistoryposting.domain.TistoryTheme;
 import olrlobt.githubtistoryposting.domain.Watermark;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.ScrapingUtils;
+import olrlobt.githubtistoryposting.utils.SvgUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.RedirectView;
+import org.w3c.dom.svg.SVGDocument;
 
 @Slf4j
 @Component
@@ -30,7 +33,15 @@ public class Tistory implements Blog {
 
     private final ScrapingUtils scrapingUtils;
     @Value("classpath:static/img/tistory.svg")
-    private Resource watermark;
+    private Resource watermarkImg;
+    private Watermark watermark;
+
+    @PostConstruct
+    public void init() {
+        SVGDocument svgDocument = SvgUtils.loadSVGDocument(watermarkImg);
+        watermark = new Watermark(svgDocument, "#ec6552");
+    }
+
 
     @Override
     public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
@@ -48,7 +59,7 @@ public class Tistory implements Blog {
         posting.setBlogImage(getBlogImage(document));
         posting.setAuthor(blogName);
         posting.setSiteName(blogName + ".tistory");
-        posting.setWatermark(new Watermark(watermark, "#ec6552"));
+        posting.setWatermark(watermark);
         return posting;
     }
 

@@ -1,11 +1,13 @@
 package olrlobt.githubtistoryposting.service.platform;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Map;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.Watermark;
 import olrlobt.githubtistoryposting.utils.DateUtils;
+import olrlobt.githubtistoryposting.utils.SvgUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -13,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
+import org.w3c.dom.svg.SVGDocument;
 
 @Component
 public class Velog implements Blog {
@@ -26,8 +29,14 @@ public class Velog implements Blog {
     private final String QUERY_LINK = "query Posts($username: String, $limit: Int) { posts(username: $username, limit: $limit) { url_slug }}";
     private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile { thumbnail }}}";
     @Value("classpath:static/img/velog.svg")
-    private Resource watermark;
+    private Resource watermarkImg;
+    private Watermark watermark;
 
+    @PostConstruct
+    public void init() {
+        SVGDocument svgDocument = SvgUtils.loadSVGDocument(watermarkImg);
+        watermark = new Watermark(svgDocument, "#5fc69a");
+    }
 
     @Override
     public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
@@ -43,7 +52,7 @@ public class Velog implements Blog {
                 DateUtils.parser(post.getReleased_at()),
                 encodedUrlSlug,
                 postingBase);
-        posting.setWatermark(new Watermark(watermark, "#5fc69a"));
+        posting.setWatermark(watermark);
         posting.setSiteName(blogName + ".log");
         posting.setAuthor(post.getUser().getUsername());
         posting.setBlogImage(UrlUtils.encodeLastPathSegment(post.getUser().getProfile().getThumbnail()));

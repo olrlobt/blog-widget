@@ -137,11 +137,8 @@ public class ImageService {
         }
 
         svgGenerator.setPaint(Color.BLACK);
-        if (postingBase.getTitleWeight() == 1) {
-            svgGenerator.setFont(FontUtils.load_b(postingBase.getTitleSize()));
-        } else {
-            svgGenerator.setFont(FontUtils.load_m(postingBase.getTitleSize()));
-        }
+        svgGenerator.setFont(postingBase.getTitleWeight() == 1 ?
+                FontUtils.load_b(postingBase.getTitleSize()) : FontUtils.load_m(postingBase.getTitleSize()));
 
         int titleHeight = drawMultilineText(
                 svgGenerator,
@@ -258,8 +255,7 @@ public class ImageService {
             return;
         }
 
-        Resource svgResource = posting.getWatermark().getResource();
-        SVGDocument svgDocument = SvgUtils.loadSVGDocument(svgResource);
+        SVGDocument svgDocument = posting.getWatermark().getSvgDocument();
 
         if (svgDocument != null) {
             Element svgElement = svgDocument.getDocumentElement();
