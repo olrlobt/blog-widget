@@ -8,45 +8,65 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum PostingBase {
 
-    BlogInfo(List.of("i", "info"), 217, 260, 10, 10, 217, 217, 0, 20, -1, -1, -1, -1, -1, -1, -1, -1, 2, 240, 240, -1,
-            -1, -1, -1, -1, -1, -1),
-    BlogPosting(List.of("p", "posting"), 217, 260, 10, 10, 217, 126, 0, 20, -1, 217, 14, 155, 3, -1, -1, -1, 1, 240,
-            240, -1, -1, -1, -1, -1, -1, -1),
-    BlogPostingWide(List.of("w", "wide"), 800, 217, 10, 10, 217, 217, 583, 28, -1, 583, 23, 50, 2, 1, 3, 14, 1, 189,
-            189, -1, -1, -1, -1, -1, -1, -1),
-    BlogPostingCard(List.of("c", "card"), 450, 130, 10, 10, 0, 0, 0, 25, 1, 430, 14, 62, 1, 1, 1, 12, 0, 105, 35, -1,
-            -1, -1, 420, 27, 10, 10),
-    BlogPostingBig(List.of("b", "big"), 320, 376, 10, 10, 320, 167, 0, 20, 1, 300, 16, 200, 1, 1, 3, 14, 1, 320, 320,
-            340, 24, 24, -1, -1, -1, -1),
+    BlogInfo(List.of("i", "info"),
+            new Dimensions(217, 260),
+            new Dimensions(10, 10),
+            new Dimensions(217, 217, 0, -1),
+            TextDimensions.EMPTY,
+            TextDimensions.EMPTY,
+            Dimensions.EMPTY,
+            Dimensions.EMPTY,
+            20, 2, 240, 240),
+    BlogPosting(List.of("p", "posting"),
+            new Dimensions(217, 260),
+            new Dimensions(10, 10),
+            new Dimensions(217, 126, 0, -1),
+            new TextDimensions(217, -1, -1, 155, 14, 3, -1),
+            TextDimensions.EMPTY,
+            Dimensions.EMPTY,
+            Dimensions.EMPTY,
+            20, 1, 240, 240),
+    BlogPostingWide(List.of("w", "wide"),
+            new Dimensions(800, 217),
+            new Dimensions(10, 10),
+            new Dimensions(217, 217, 583, -1),
+            new TextDimensions(583, -1, -1, 50, 23, 2, -1),
+            new TextDimensions(-1, 1, 14, 3, -1),
+            Dimensions.EMPTY,
+            Dimensions.EMPTY,
+            28, 1, 189, 189),
+    BlogPostingCard(List.of("c", "card"),
+            new Dimensions(450, 130),
+            new Dimensions(10, 10),
+            new Dimensions(0, 0, 0, -1),
+            new TextDimensions(430, -1, -1, 62, 14, 1, 1),
+            new TextDimensions(-1, 1, 12, 1, -1),
+            Dimensions.EMPTY,
+            new Dimensions(10, 10, 420, 27),
+            25, 0, 105, 35),
+    BlogPostingBig(List.of("b", "big"),
+            new Dimensions(320, 376),
+            new Dimensions(10, 10),
+            new Dimensions(320, 167, 0, -1),
+            new TextDimensions(300, -1, -1, 200, 16, 1, 1),
+            new TextDimensions(-1, 1, 14, 3, -1),
+            new Dimensions(24, 24, -1, 340),
+            Dimensions.EMPTY,
+            20, 1, 320, 320),
     ;
 
     private final List<String> theme;
-    private final int boxWidth;
-    private final int boxHeight;
-    private final int boxArcWidth;
-    private final int boxArcHeight;
-    private final int imgWidth;
-    private final int imgHeight;
-    private final int imgX;
+    private final Dimensions box;
+    private final Dimensions boxArc;
+    private final Dimensions img;
+    private final TextDimensions title;
+    private final TextDimensions content;
+    private final Dimensions blogImage;
+    private final Dimensions watermark;
     private final int textPadding;
-    private final int titleWeight;
-    private final int titleWidth;
-    private final int titleSize;
-    private final int titleY;
-    private final int titleMaxLine;
-    private final int contentHeight;
-    private final int contentMaxLine;
-    private final int contentSize;
     private final int footerType; // empty : -1, both : 0 ,publishedTime : 1 , url : 2
     private final int publishedTimeY;
     private final int urlY;
-    private final int blogImageY;
-    private final int blogImageWidth;
-    private final int blogImageHeight;
-    private final int watermarkX;
-    private final int watermarkY;
-    private final int watermarkWidth;
-    private final int watermarkHeight;
 
     public static PostingBase getTheme(String key) {
         if (key == null || key.isEmpty()) {

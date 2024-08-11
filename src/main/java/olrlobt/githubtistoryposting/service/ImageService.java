@@ -48,7 +48,8 @@ public class ImageService {
     public byte[] createSvgImageBox(Posting posting) throws IOException {
         SVGGraphics2D svgGenerator = SvgUtils.init();
         PostingBase postingBase = posting.getPostingBase();
-        svgGenerator.setSVGCanvasSize(new java.awt.Dimension(postingBase.getBoxWidth(), postingBase.getBoxHeight()));
+        svgGenerator.setSVGCanvasSize(
+                new java.awt.Dimension(postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
         drawBackground(svgGenerator, postingBase);
         drawThumbnail(posting, svgGenerator, postingBase);
         drawText(posting, svgGenerator, postingBase);
@@ -66,8 +67,8 @@ public class ImageService {
 
         RoundRectangle2D background = new RoundRectangle2D.Double(
                 0, 0,
-                postingBase.getBoxWidth(), postingBase.getBoxHeight(),
-                postingBase.getBoxArcWidth(), postingBase.getBoxArcHeight()
+                postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),
+                postingBase.getBoxArc().getWidth(), postingBase.getBoxArc().getHeight()
         );
         svgGenerator.fill(background);
 //        svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
@@ -84,9 +85,9 @@ public class ImageService {
             int originalWidth = originalImage.getWidth();
             int originalHeight = originalImage.getHeight();
 
-            int targetWidth = postingBase.getImgWidth();
-            int targetHeight = postingBase.getImgHeight();
-            int targetX = postingBase.getImgX();
+            int targetWidth = postingBase.getImg().getWidth();
+            int targetHeight = postingBase.getImg().getHeight();
+            int targetX = postingBase.getImg().getX();
             int targetY = 0;
             double originalAspect = (double) originalWidth / originalHeight;
             double targetAspect = (double) targetWidth / targetHeight;
@@ -105,8 +106,9 @@ public class ImageService {
             }
 
             Area combinedClip = new Area(new RoundRectangle2D.Double(
-                    0, 0, postingBase.getBoxWidth(), postingBase.getBoxHeight(), postingBase.getBoxArcWidth(),
-                    postingBase.getBoxArcHeight()
+                    0, 0,
+                    postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),
+                    postingBase.getBoxArc().getWidth(), postingBase.getBoxArc().getHeight()
             ));
             combinedClip.intersect(new Area(new Rectangle2D.Double(
                     targetX, targetY, targetWidth, targetHeight
@@ -130,7 +132,7 @@ public class ImageService {
     }
 
     private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getTitleMaxLine() == -1) {
+        if (postingBase.getTitle().getMaxLine() == -1) {
             return;
         }
         svgGenerator.setPaint(Color.BLACK);
@@ -138,14 +140,14 @@ public class ImageService {
                 svgGenerator,
                 posting.getTitle(),
                 postingBase.getTextPadding(),
-                postingBase.getTitleY(),
-                postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
-                postingBase.getTitleMaxLine(),
-                postingBase.getTitleWeight() == 1 ?
-                        FontUtils.load_b(postingBase.getTitleSize()) : FontUtils.load_m(postingBase.getTitleSize()
-                ));
+                postingBase.getTitle().getY(),
+                postingBase.getTitle().getWidth() - postingBase.getTextPadding() * 2,
+                postingBase.getTitle().getMaxLine(),
+                postingBase.getTitle().getWeight() == 1 ?
+                        FontUtils.load_b(postingBase.getTitle().getSize())
+                        : FontUtils.load_m(postingBase.getTitle().getSize()));
 
-        if (postingBase.getContentMaxLine() == -1 || posting.getContent().isEmpty()) {
+        if (postingBase.getContent().getMaxLine() == -1 || posting.getContent().isEmpty()) {
             return;
         }
         drawMultilineText(
@@ -153,9 +155,9 @@ public class ImageService {
                 posting.getContent(),
                 postingBase.getTextPadding(),
                 titleHeight,
-                postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
-                postingBase.getContentMaxLine(),
-                FontUtils.load_m(postingBase.getContentSize())
+                postingBase.getTitle().getWidth() - postingBase.getTextPadding() * 2,
+                postingBase.getContent().getMaxLine(),
+                FontUtils.load_m(postingBase.getContent().getSize())
         );
     }
 
@@ -188,7 +190,7 @@ public class ImageService {
     }
 
     private void drawAuthorImg(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getBlogImageY() == -1) {
+        if (postingBase.getBlogImage().getY() == -1) {
             return;
         }
         String imageUrl = posting.getBlogImage();
@@ -199,19 +201,22 @@ public class ImageService {
 
         try {
             BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
-            BufferedImage circularImage = new BufferedImage(postingBase.getBlogImageWidth(), postingBase.getBlogImageHeight(),
+            BufferedImage circularImage = new BufferedImage(postingBase.getBlogImage().getWidth(),
+                    postingBase.getBlogImage().getHeight(),
                     BufferedImage.TYPE_INT_ARGB);
 
             Graphics2D g2d = circularImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-            g2d.fillOval(0, 0, postingBase.getBlogImageWidth(), postingBase.getBlogImageHeight());
+            g2d.fillOval(0, 0, postingBase.getBlogImage().getWidth(), postingBase.getBlogImage().getHeight());
             g2d.setComposite(AlphaComposite.SrcIn);
-            g2d.drawImage(originalImage, 0, 0, postingBase.getBlogImageWidth(), postingBase.getBlogImageHeight(), null);
+            g2d.drawImage(originalImage, 0, 0, postingBase.getBlogImage().getWidth(),
+                    postingBase.getBlogImage().getHeight(), null);
             g2d.dispose();
 
-            svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImageY(), null);
+            svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImage().getY(),
+                    null);
 
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
@@ -219,26 +224,27 @@ public class ImageService {
     }
 
     private void drawAuthorText(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getBlogImageY() == -1) {
+        if (postingBase.getBlogImage().getY() == -1) {
             return;
         }
 
-        drawStroke(svgGenerator, 0, postingBase.getBoxWidth(),
-                postingBase.getBlogImageY() - postingBase.getTextPadding() / 2,
-                postingBase.getBlogImageY() - postingBase.getTextPadding() / 2 + 1);
+        drawStroke(svgGenerator, 0, postingBase.getBox().getWidth(),
+                postingBase.getBlogImage().getY() - postingBase.getTextPadding() / 2,
+                postingBase.getBlogImage().getY() - postingBase.getTextPadding() / 2 + 1);
 
         svgGenerator.setFont(FontUtils.load_m());
 
         String byText = "by ";
         drawText(svgGenerator, byText,
-                postingBase.getTextPadding() + postingBase.getBlogImageWidth() * 3 / 2
-                , postingBase.getBlogImageY() + postingBase.getBlogImageHeight() * 2 / 3,
+                postingBase.getTextPadding() + postingBase.getBlogImage().getWidth() * 3 / 2
+                , postingBase.getBlogImage().getY() + postingBase.getBlogImage().getHeight() * 2 / 3,
                 Color.GRAY);
 
         FontMetrics metrics = svgGenerator.getFontMetrics();
         drawText(svgGenerator, posting.getAuthor(),
-                postingBase.getTextPadding() + postingBase.getBlogImageWidth() * 3 / 2 + metrics.stringWidth(byText)
-                , postingBase.getBlogImageY() + postingBase.getBlogImageHeight() * 2 / 3,
+                postingBase.getTextPadding() + postingBase.getBlogImage().getWidth() * 3 / 2 + metrics.stringWidth(
+                        byText)
+                , postingBase.getBlogImage().getY() + postingBase.getBlogImage().getHeight() * 2 / 3,
                 Color.BLACK);
     }
 
@@ -248,8 +254,8 @@ public class ImageService {
     }
 
     private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (posting.getWatermark() == null || postingBase.getWatermarkX() == -1
-                || postingBase.getWatermarkY() == -1) {
+        if (posting.getWatermark() == null || postingBase.getWatermark().getX() == -1
+                || postingBase.getWatermark().getY() == -1) {
             return;
         }
 
@@ -264,11 +270,11 @@ public class ImageService {
             GraphicsNode svgGraphicsNode = new GVTBuilder().build(bridgeContext, svgDocument);
 
             AffineTransform scaleTransform = getScaleTransform(svgGraphicsNode,
-                    posting.getPostingBase().getWatermarkWidth(),
-                    posting.getPostingBase().getWatermarkHeight());
+                    posting.getPostingBase().getWatermark().getWidth(),
+                    posting.getPostingBase().getWatermark().getHeight());
 
             AffineTransform transform = new AffineTransform();
-            transform.translate(postingBase.getWatermarkX(), postingBase.getWatermarkY());
+            transform.translate(postingBase.getWatermark().getX(), postingBase.getWatermark().getY());
             transform.concatenate(scaleTransform);
 
             svgGraphicsNode.setTransform(transform);
@@ -302,8 +308,8 @@ public class ImageService {
 
         RoundRectangle2D stroke = new RoundRectangle2D.Double(
                 0, 0,
-                postingBase.getBoxWidth(), postingBase.getBoxHeight(),
-                postingBase.getBoxArcWidth(), postingBase.getBoxArcHeight()
+                postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),
+                postingBase.getBoxArc().getWidth(), postingBase.getBoxArc().getHeight()
         );
         svgGenerator.draw(stroke);
     }
