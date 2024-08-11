@@ -247,7 +247,7 @@ public class ImageService {
         svgGenerator.drawString(text, x, y);
     }
 
-    private synchronized void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+    private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
         if (posting.getWatermark() == null || postingBase.getWatermarkX() == -1
                 || postingBase.getWatermarkY() == -1) {
             return;

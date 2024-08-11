@@ -13,6 +13,6 @@ public class Watermark {
     private String color;
 
     public Watermark clone() {
-        return new Watermark(this.svgDocument, this.color);
+        return new Watermark((SVGDocument) svgDocument.cloneNode(true), this.color);
     }
 }
