@@ -42,11 +42,10 @@ public class Tistory implements Blog {
         watermark = new Watermark(svgDocument, "#ec6552");
     }
 
-
     @Override
     public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
         int page = 1;
-        Document firstDocument = scrapingUtils.byUrl(createUrl(blogName, page));
+        Document firstDocument = scrapingUtils.byUrl(createUrl(blogName, 1));
         TistoryTheme theme = findTistoryTheme(firstDocument);
 
         int postingOfPage = getPostingOfPageNum(firstDocument, theme);
@@ -55,12 +54,8 @@ public class Tistory implements Blog {
         Document document = scrapingUtils.byUrl(url);
 
         Elements postings = document.select(theme.getPostingList());
-        Posting posting = findPosting(postings, index % postingOfPage, theme, postingBase, url);
-        posting.setBlogImage(getBlogImage(document));
-        posting.setAuthor(blogName);
-        posting.setSiteName(blogName + ".tistory");
-        posting.setWatermark(watermark.clone());
-        return posting;
+        return makePosting(postings, blogName, index % postingOfPage, theme, postingBase, url,
+                getBlogImage(document));
     }
 
     @Override
@@ -76,12 +71,10 @@ public class Tistory implements Blog {
         Elements postings = document.select(theme.getPostingLink());
         index %= postingOfPage;
         if (index >= postings.size()) {
-            return new RedirectView(document.select(BlogInfo.TISTORY.getBlogUrl())
-                    .attr("content"));
+            return new RedirectView(document.select(BlogInfo.TISTORY.getBlogUrl()).attr("content"));
         }
 
-        String postingParam = postings.get(index)
-                .attr("href");
+        String postingParam = postings.get(index).attr("href");
         return new RedirectView(UrlUtils.of(blogName, postingParam));
     }
 
@@ -89,15 +82,14 @@ public class Tistory implements Blog {
     public Posting blog(String blogName) throws IOException {
         Document document = scrapingUtils.byUrl(createUrl(blogName, 1));
 
-        String originalThumb = document.select(BlogInfo.TISTORY.getBlogThumb())
-                .attr("content");
+        String originalThumb = getBlogImage(document);
         String resizeThumbnail = UrlUtils.changeThumbnailSize(originalThumb, ImageSize.TistoryBlog.getSizeParam());
         String title = document.select(BlogInfo.TISTORY.getBlogName())
                 .attr("content");
         String footer = document.select(BlogInfo.TISTORY.getBlogUrl())
                 .attr("content");
 
-        return new Posting(resizeThumbnail, title, "", "", footer, PostingBase.BlogInfo);
+        return Posting.createBlogPosting(resizeThumbnail, title, footer, PostingBase.BlogInfo);
     }
 
     private static String createUrl(String blogName, int page) {
@@ -105,12 +97,9 @@ public class Tistory implements Blog {
     }
 
     private String getBlogImage(Document document) {
-        return document.select("head meta[property=og:image]").attr("content");
+        return document.select(BlogInfo.TISTORY.getBlogThumb()).attr("content");
     }
 
-    /**
-     * Tistory 테마 찾기
-     */
     private TistoryTheme findTistoryTheme(Document document) {
         String themeIndex = document.selectFirst("body").className().split(" ")[0];
         if (themeIndex.isEmpty()) {
@@ -123,28 +112,22 @@ public class Tistory implements Blog {
     }
 
     private int getPostingOfPageNum(Document document, TistoryTheme theme) {
-        Elements postings = document.select(theme.getPostingList());
-        return postings.size();
+        return document.select(theme.getPostingList()).size();
     }
 
-    private Posting findPosting(Elements postings, int index, TistoryTheme theme, PostingBase postingBase,
-                                String url) {
+    private Posting makePosting(Elements postings, String blogName, int index, TistoryTheme theme,
+                                PostingBase postingBase, String url, String blogImage) {
         if (index >= postings.size()) {
             return Posting.createNoPosting();
         }
-        return makePosting(postings.get(index), theme, postingBase, url);
-    }
-
-    private Posting makePosting(Element posting, TistoryTheme theme, PostingBase postingBase, String url) {
+        Element posting = postings.get(index);
         String thumbnail = findThumbnail(posting, theme.getPostingThumb());
         String title = posting.select(theme.getPostingTitle()).text();
         String content = posting.select(theme.getPostingContent()).text();
         LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
-        int questionMarkIndex = url.indexOf("?");
-        if (questionMarkIndex != -1) {
-            url = url.substring(0, questionMarkIndex);
-        }
-        return new Posting(thumbnail, title, content, date, url, postingBase);
+        String sanitizeUrl = UrlUtils.sanitizeUrl(url);
+        return new Posting(thumbnail, blogImage, blogName, title, content, date,
+                sanitizeUrl, blogName + ".tistory", postingBase, watermark.clone());
     }
 
     private static String findThumbnail(Element posting, String themeTag) {

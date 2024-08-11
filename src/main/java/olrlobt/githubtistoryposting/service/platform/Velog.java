@@ -48,15 +48,18 @@ public class Velog implements Blog {
         VelogResponse response = request(QUERY_POSTING, variables);
         VelogResponse.Post post = response.getData().getPosts().get(index);
         String encodedUrlSlug = "velog.io/@" + blogName;
-        Posting posting = new Posting(post.getThumbnail(), post.getTitle(), post.getShort_description(),
+        String blogImage = UrlUtils.encodeLastPathSegment(post.getUser().getProfile().getThumbnail());
+
+        return new Posting(post.getThumbnail(),
+                blogImage,
+                post.getUser().getUsername(),
+                post.getTitle(),
+                post.getShort_description(),
                 DateUtils.parser(post.getReleased_at()),
                 encodedUrlSlug,
-                postingBase);
-        posting.setWatermark(watermark.clone());
-        posting.setSiteName(blogName + ".log");
-        posting.setAuthor(post.getUser().getUsername());
-        posting.setBlogImage(UrlUtils.encodeLastPathSegment(post.getUser().getProfile().getThumbnail()));
-        return posting;
+                blogName + ".log",
+                postingBase,
+                watermark.clone());
     }
 
     @Override
@@ -74,19 +77,13 @@ public class Velog implements Blog {
 
     @Override
     public Posting blog(String blogName) {
-        Map<String, Object> variables = Map.of(
-                "username", blogName
-        );
-
+        Map<String, Object> variables = Map.of("username", blogName);
         VelogResponse user = request(QUERY_BLOG, variables);
         String username = user.getData().getUser().getUsername();
         String thumbnail = user.getData().getUser().getProfile().getThumbnail();
-        if (thumbnail != null) {
-            String location = thumbnail.substring(0, thumbnail.lastIndexOf("/"));
-            String param = UrlUtils.encodeByKorean(thumbnail.substring(thumbnail.lastIndexOf("/")));
-            return new Posting(location + param, username, "", "", createVelog(blogName, ""), PostingBase.BlogInfo);
-        }
-        return new Posting(thumbnail, username, "", "", createVelog(blogName, ""), PostingBase.BlogInfo);
+        String thumbnailUrl = generateThumbnailUrl(thumbnail);
+
+        return Posting.createBlogPosting(thumbnailUrl, username, createVelog(blogName, ""), PostingBase.BlogInfo);
     }
 
     private VelogResponse request(String query, Map<String, Object> variables) {
@@ -96,6 +93,15 @@ public class Velog implements Blog {
                 .retrieve()
                 .bodyToMono(VelogResponse.class)
                 .block();
+    }
+
+    private String generateThumbnailUrl(String thumbnail) {
+        if (thumbnail == null) {
+            return null;
+        }
+        String location = thumbnail.substring(0, thumbnail.lastIndexOf("/"));
+        String param = UrlUtils.encodeByKorean(thumbnail.substring(thumbnail.lastIndexOf("/")));
+        return location + param;
     }
 
     private String createVelog(String blogName, String urlSlug) {

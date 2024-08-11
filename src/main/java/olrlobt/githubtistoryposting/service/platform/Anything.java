@@ -1,18 +1,16 @@
 package olrlobt.githubtistoryposting.service.platform;
 
 import java.io.IOException;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.utils.DateUtils;
+import olrlobt.githubtistoryposting.utils.ScrapingUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.RedirectView;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.utils.DateUtils;
-import olrlobt.githubtistoryposting.utils.ScrapingUtils;
 
 @Slf4j
 @Component
@@ -29,9 +27,8 @@ public class Anything implements Blog {
         String content = document.select("head meta[property=og:description]").attr("content");
         String publishedTime = document.select("head meta[property=article:published_time]").attr("content");
 
-        Posting posting = new Posting(thumb, title, content, DateUtils.parser(publishedTime), url, postingBase);
-        posting.setSiteName(UrlUtils.getSiteName(url));
-        return posting;
+        return new Posting(thumb, title, content, DateUtils.parser(publishedTime), UrlUtils.getSiteName(url),
+                url, postingBase);
     }
 
     @Override
@@ -44,6 +41,6 @@ public class Anything implements Blog {
         Document document = scrapingUtils.byUrl(url);
         String thumb = document.select("head meta[property=og:image]").attr("content");
         String title = document.select("head meta[property=og:title]").attr("content");
-        return new Posting(thumb, title, "", "", url, PostingBase.BlogInfo);
+        return Posting.createBlogPosting(thumb, title, url, PostingBase.BlogInfo);
     }
 }

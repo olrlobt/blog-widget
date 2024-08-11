@@ -68,4 +68,8 @@ public class UrlUtils {
         return baseUrl + encodedLastSegment;
     }
 
+    public static String sanitizeUrl(String url) {
+        int questionMarkIndex = url.indexOf("?");
+        return (questionMarkIndex != -1) ? url.substring(0, questionMarkIndex) : url;
+    }
 }
