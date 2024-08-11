@@ -59,7 +59,7 @@ public class Tistory implements Blog {
         posting.setBlogImage(getBlogImage(document));
         posting.setAuthor(blogName);
         posting.setSiteName(blogName + ".tistory");
-        posting.setWatermark(watermark);
+        posting.setWatermark(watermark.clone());
         return posting;
     }
 

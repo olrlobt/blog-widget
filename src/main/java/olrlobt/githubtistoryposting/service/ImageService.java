@@ -50,10 +50,11 @@ public class ImageService {
         PostingBase postingBase = posting.getPostingBase();
         svgGenerator.setSVGCanvasSize(new java.awt.Dimension(postingBase.getBoxWidth(), postingBase.getBoxHeight()));
         drawBackground(svgGenerator, postingBase);
-        drawThumbnail(posting, svgGenerator, posting.getPostingBase());
-        drawText(posting, svgGenerator, posting.getPostingBase());
+        drawThumbnail(posting, svgGenerator, postingBase);
+        drawText(posting, svgGenerator, postingBase);
         drawFooter(posting, svgGenerator, postingBase);
-        drawAuthor(posting, svgGenerator, postingBase);
+        drawAuthorImg(posting, svgGenerator, postingBase);
+        drawAuthorText(posting, svgGenerator, postingBase);
         drawWatermark(posting, svgGenerator, postingBase);
         drawStroke(svgGenerator, postingBase);
 
@@ -103,16 +104,13 @@ public class ImageService {
                 yOffset = (drawHeight - targetHeight) / 2;
             }
 
-            RoundRectangle2D roundedClip = new RoundRectangle2D.Double(
+            Area combinedClip = new Area(new RoundRectangle2D.Double(
                     0, 0, postingBase.getBoxWidth(), postingBase.getBoxHeight(), postingBase.getBoxArcWidth(),
                     postingBase.getBoxArcHeight()
-            );
-            Rectangle2D rectClip = new Rectangle2D.Double(
+            ));
+            combinedClip.intersect(new Area(new Rectangle2D.Double(
                     targetX, targetY, targetWidth, targetHeight
-            );
-
-            Area combinedClip = new Area(roundedClip);
-            combinedClip.intersect(new Area(rectClip));
+            )));
 
             Shape originalClip = svgGenerator.getClip();
             svgGenerator.setClip(combinedClip);
@@ -132,14 +130,10 @@ public class ImageService {
     }
 
     private void drawText(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getTitleY() == -1) {
+        if (postingBase.getTitleMaxLine() == -1) {
             return;
         }
-
         svgGenerator.setPaint(Color.BLACK);
-        svgGenerator.setFont(postingBase.getTitleWeight() == 1 ?
-                FontUtils.load_b(postingBase.getTitleSize()) : FontUtils.load_m(postingBase.getTitleSize()));
-
         int titleHeight = drawMultilineText(
                 svgGenerator,
                 posting.getTitle(),
@@ -147,52 +141,53 @@ public class ImageService {
                 postingBase.getTitleY(),
                 postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
                 postingBase.getTitleMaxLine(),
-                svgGenerator.getFont()
-        );
+                postingBase.getTitleWeight() == 1 ?
+                        FontUtils.load_b(postingBase.getTitleSize()) : FontUtils.load_m(postingBase.getTitleSize()
+                ));
 
-        if (postingBase.getContentMaxLine() != -1 && !posting.getContent().isEmpty()) {
-            drawMultilineText(
-                    svgGenerator,
-                    posting.getContent(),
-                    postingBase.getTextPadding(),
-                    titleHeight,
-                    postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
-                    postingBase.getContentMaxLine(),
-                    FontUtils.load_m(postingBase.getContentSize())
-            );
+        if (postingBase.getContentMaxLine() == -1 || posting.getContent().isEmpty()) {
+            return;
         }
+        drawMultilineText(
+                svgGenerator,
+                posting.getContent(),
+                postingBase.getTextPadding(),
+                titleHeight,
+                postingBase.getTitleWidth() - postingBase.getTextPadding() * 2,
+                postingBase.getContentMaxLine(),
+                FontUtils.load_m(postingBase.getContentSize())
+        );
     }
 
     private static void drawFooter(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getFooterType() == -1) {
+        int footerType = postingBase.getFooterType();
+        if (footerType == -1) {
             return;
         }
-
         svgGenerator.setFont(FontUtils.load_m());
         svgGenerator.setPaint(Color.GRAY);
-        String footer = "";
+
         String publishedTime = posting.getPublishedTime();
         String url = posting.getUrl();
-        int height = 0;
-        if (postingBase.getFooterType() == 1) {
-            footer = (publishedTime != null && !publishedTime.isEmpty()) ? publishedTime : url;
-            height = (publishedTime != null && !publishedTime.isEmpty()) ? postingBase.getPublishedTimeY()
-                    : postingBase.getUrlY();
-        } else if (postingBase.getFooterType() == 2) {
-            footer = (url != null && !url.isEmpty()) ? url : publishedTime;
-            height = (url != null && !url.isEmpty()) ? postingBase.getUrlY()
-                    : postingBase.getPublishedTimeY();
-        } else if (postingBase.getFooterType() == 0) {
+        String footer;
+        int height;
+
+        if (footerType == 0) {
             footer = publishedTime;
             svgGenerator.drawString(footer, postingBase.getTextPadding(), postingBase.getPublishedTimeY());
             svgGenerator.setFont(FontUtils.load_b());
             footer = posting.getSiteName();
             height = postingBase.getUrlY();
+        } else {
+            boolean usePublishedTime = (footerType == 1 && publishedTime != null && !publishedTime.isEmpty())
+                    || (footerType == 2 && (url == null || url.isEmpty()));
+            footer = usePublishedTime ? publishedTime : url;
+            height = usePublishedTime ? postingBase.getPublishedTimeY() : postingBase.getUrlY();
         }
         svgGenerator.drawString(footer, postingBase.getTextPadding(), height);
     }
 
-    private void drawAuthor(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+    private void drawAuthorImg(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
         if (postingBase.getBlogImageY() == -1) {
             return;
         }
@@ -202,32 +197,30 @@ public class ImageService {
             imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
         }
 
-        int width = 24;
-        int height = 24;
-
         try {
             BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
-            BufferedImage mask = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2dMask = mask.createGraphics();
-            g2dMask.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2dMask.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g2dMask.fillOval(0, 0, width, height);
-            g2dMask.dispose();
+            BufferedImage circularImage = new BufferedImage(postingBase.getBlogImageWidth(), postingBase.getBlogImageHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
 
-            BufferedImage circularImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = circularImage.createGraphics();
-
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.drawImage(originalImage, 0, 0, width, height, null);
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_IN));
-            g2d.drawImage(mask, 0, 0, null);
+
+            g2d.fillOval(0, 0, postingBase.getBlogImageWidth(), postingBase.getBlogImageHeight());
+            g2d.setComposite(AlphaComposite.SrcIn);
+            g2d.drawImage(originalImage, 0, 0, postingBase.getBlogImageWidth(), postingBase.getBlogImageHeight(), null);
             g2d.dispose();
 
-            svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImageY(),
-                    null);
+            svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImageY(), null);
+
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
+        }
+    }
+
+    private void drawAuthorText(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        if (postingBase.getBlogImageY() == -1) {
+            return;
         }
 
         drawStroke(svgGenerator, 0, postingBase.getBoxWidth(),
@@ -235,21 +228,26 @@ public class ImageService {
                 postingBase.getBlogImageY() - postingBase.getTextPadding() / 2 + 1);
 
         svgGenerator.setFont(FontUtils.load_m());
+
         String byText = "by ";
-        svgGenerator.setPaint(Color.GRAY);
-        svgGenerator.drawString(byText, postingBase.getTextPadding() + width * 3 / 2,
-                postingBase.getBlogImageY() + height * 2 / 3);
+        drawText(svgGenerator, byText,
+                postingBase.getTextPadding() + postingBase.getBlogImageWidth() * 3 / 2
+                , postingBase.getBlogImageY() + postingBase.getBlogImageHeight() * 2 / 3,
+                Color.GRAY);
 
         FontMetrics metrics = svgGenerator.getFontMetrics();
-        int byTextWidth = metrics.stringWidth(byText);
-
-        String authorText = posting.getAuthor();
-        svgGenerator.setPaint(Color.BLACK);
-        svgGenerator.drawString(authorText, postingBase.getTextPadding() + width * 3 / 2 + byTextWidth,
-                postingBase.getBlogImageY() + height * 2 / 3);
+        drawText(svgGenerator, posting.getAuthor(),
+                postingBase.getTextPadding() + postingBase.getBlogImageWidth() * 3 / 2 + metrics.stringWidth(byText)
+                , postingBase.getBlogImageY() + postingBase.getBlogImageHeight() * 2 / 3,
+                Color.BLACK);
     }
 
-    private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+    private static void drawText(SVGGraphics2D svgGenerator, String text, int x, int y, Color color) {
+        svgGenerator.setPaint(color);
+        svgGenerator.drawString(text, x, y);
+    }
+
+    private synchronized void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
         if (posting.getWatermark() == null || postingBase.getWatermarkX() == -1
                 || postingBase.getWatermarkY() == -1) {
             return;
@@ -280,19 +278,14 @@ public class ImageService {
 
 
     private void changeSVGColor(Element svgElement, String color) {
-        // 모든 <circle> 요소의 색상 변경 (fill 속성)
-        NodeList circles = svgElement.getElementsByTagName("circle");
-        for (int i = 0; i < circles.getLength(); i++) {
-            Element circle = (Element) circles.item(i);
-            circle.setAttribute("fill", color);
-        }
+        String[] tags = {"circle", "path"};
 
-        // 추가로 다른 요소들도 색상 변경 적용 가능
-        // 예: 모든 <path>, <rect> 등 요소의 색상 변경
-        NodeList paths = svgElement.getElementsByTagName("path");
-        for (int i = 0; i < paths.getLength(); i++) {
-            Element path = (Element) paths.item(i);
-            path.setAttribute("fill", color);
+        for (String tag : tags) {
+            NodeList elements = svgElement.getElementsByTagNameNS("*", tag);
+            for (int i = 0; i < elements.getLength(); i++) {
+                Element element = (Element) elements.item(i);
+                element.setAttribute("fill", color);
+            }
         }
     }
 
@@ -336,10 +329,10 @@ public class ImageService {
                 if (linesCount < maxLines - 1) {
                     svgGenerator.drawString(lineText, startX, startY + linesCount * lineHeight);
                     linesCount++;
-                    currentLine = new StringBuilder();
+                    currentLine.setLength(0);
                 } else {
                     if (lineWidth > maxWidth) {
-                        while (metrics.stringWidth(lineText + TRUNCATE) > maxWidth && lineText.length() > 0) {
+                        while (metrics.stringWidth(lineText + TRUNCATE) > maxWidth && !lineText.isEmpty()) {
                             lineText = lineText.substring(0, lineText.length() - 1);
                         }
                         lineText += TRUNCATE;
@@ -351,7 +344,7 @@ public class ImageService {
             }
         }
 
-        if (currentLine.length() > 0 && linesCount < maxLines) {
+        if (!currentLine.isEmpty() && linesCount < maxLines) {
             svgGenerator.drawString(currentLine.toString(), startX, startY + linesCount * lineHeight);
             linesCount++;
         }

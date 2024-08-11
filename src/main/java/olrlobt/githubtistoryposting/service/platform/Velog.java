@@ -52,7 +52,7 @@ public class Velog implements Blog {
                 DateUtils.parser(post.getReleased_at()),
                 encodedUrlSlug,
                 postingBase);
-        posting.setWatermark(watermark);
+        posting.setWatermark(watermark.clone());
         posting.setSiteName(blogName + ".log");
         posting.setAuthor(post.getUser().getUsername());
         posting.setBlogImage(UrlUtils.encodeLastPathSegment(post.getUser().getProfile().getThumbnail()));
