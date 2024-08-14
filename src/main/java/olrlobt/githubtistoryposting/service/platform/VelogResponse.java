@@ -3,7 +3,6 @@ package olrlobt.githubtistoryposting.service.platform;
 import java.util.List;
 
 import lombok.Getter;
-import olrlobt.githubtistoryposting.domain.Posting;
 
 @Getter
 public class VelogResponse {

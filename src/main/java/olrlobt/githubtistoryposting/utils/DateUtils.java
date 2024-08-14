@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 
@@ -26,8 +27,11 @@ public class DateUtils {
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy. M. d."))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy.M.d"))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d"))
+			.appendOptional(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX"))
+			.appendOptional(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssZ"))
 			.appendOptional(DateTimeFormatter.ISO_INSTANT) // velog
 			.appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME) // anyting-else
+			.appendOptional(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 			.parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
 			.parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
 			.toFormatter();

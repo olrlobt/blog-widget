@@ -38,3 +38,4 @@ out/
 
 ### logging
 /logs/
+/src/main/resources/application-product.yml

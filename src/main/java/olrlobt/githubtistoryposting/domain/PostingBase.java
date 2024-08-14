@@ -42,7 +42,7 @@ public enum PostingBase {
             new TextDimensions(430, -1, -1, 62, 14, 1, 1),
             new TextDimensions(-1, 1, 12, 1, -1),
             Dimensions.EMPTY,
-            new Dimensions(10, 10, 420, 27),
+            new Dimensions(12, 12, 420, 24),
             25, 0, 105, 35),
     BlogPostingBig(List.of("b", "big"),
             new Dimensions(320, 376),
