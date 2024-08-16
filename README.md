@@ -1,4 +1,16 @@
 
+## delay test
+
+
+[![olrlobt tistory](https://blogwidget.com/api/test/t/posting/0?name=olrlobt&theme=b&delay=0)](https://olrlobt.tistory.com/)
+[![olrlobt tistory](https://blogwidget.com/api/test/t/posting/1?name=olrlobt&theme=b&delay=1000)](https://olrlobt.tistory.com/)
+[![olrlobt tistory](https://blogwidget.com/api/test/t/posting/2?name=olrlobt&theme=b&delay=2000)](https://olrlobt.tistory.com/)
+[![olrlobt tistory](https://blogwidget.com/api/test/t/posting/3?name=olrlobt&theme=b&delay=3000)](https://olrlobt.tistory.com/)
+[![olrlobt tistory](https://blogwidget.com/api/test/t/posting/4?name=olrlobt&theme=b&delay=4000)](https://olrlobt.tistory.com/)
+[![olrlobt tistory](https://blogwidget.com/api/test/t/posting/5?name=olrlobt&theme=b&delay=5000)](https://olrlobt.tistory.com/)
+
+
+
 
 # Blog Widget for GitHub README
 
@@ -13,6 +25,8 @@
 
 
 [![olrlobt tistory](https://blogwidget.com/api/t/blog?name=olrlobt)](https://olrlobt.tistory.com/)
+
+
 
 
 <br>
