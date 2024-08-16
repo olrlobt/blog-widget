@@ -1,5 +1,6 @@
 package olrlobt.githubtistoryposting.utils;
 
+import java.awt.RenderingHints;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +24,15 @@ public class SvgUtils {
     public static SVGGraphics2D init() {
         DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
         Document document = domImpl.createDocument(NAMESPACE_URL, SVG_ELEMENT, null);
-        return new SVGGraphics2D(document);
+
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        svgGenerator.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        svgGenerator.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        svgGenerator.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+        svgGenerator.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+        svgGenerator.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+        svgGenerator.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+        return svgGenerator;
     }
 
     public static byte[] toByte(SVGGraphics2D svgGenerator) throws IOException {

@@ -1,9 +1,13 @@
 package olrlobt.githubtistoryposting.api;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.OK;
 
 import java.io.IOException;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import olrlobt.githubtistoryposting.domain.Posting;
+import olrlobt.githubtistoryposting.service.ImageService;
+import olrlobt.githubtistoryposting.service.PostingService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,12 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import olrlobt.githubtistoryposting.domain.Posting;
-import olrlobt.githubtistoryposting.service.ImageService;
-import olrlobt.githubtistoryposting.service.PostingService;
 
 @Slf4j
 @RestController

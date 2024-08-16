@@ -38,7 +38,7 @@ public enum PostingBase {
     BlogPostingCard(List.of("c", "card"),
             new Dimensions(450, 130),
             new Dimensions(10, 10),
-            new Dimensions(0, 0, 0, -1),
+            Dimensions.EMPTY,
             new TextDimensions(430, -1, -1, 62, 14, 1, 1),
             new TextDimensions(-1, 1, 12, 1, -1),
             Dimensions.EMPTY,

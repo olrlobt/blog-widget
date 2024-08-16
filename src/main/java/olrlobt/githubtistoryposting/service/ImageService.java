@@ -1,23 +1,24 @@
 package olrlobt.githubtistoryposting.service;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import javax.imageio.ImageIO;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import olrlobt.githubtistoryposting.domain.BlogInfo;
+import olrlobt.githubtistoryposting.domain.Dimensions;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.utils.FontUtils;
@@ -44,14 +45,18 @@ public class ImageService {
     private Resource NO_IMAGE;
     @Value("classpath:static/img/No_Profile.webp")
     private Resource NO_PROFILE;
+    private final OkHttpClient client = new OkHttpClient();
 
     public byte[] createSvgImageBox(Posting posting) throws IOException {
         SVGGraphics2D svgGenerator = SvgUtils.init();
         PostingBase postingBase = posting.getPostingBase();
         svgGenerator.setSVGCanvasSize(
                 new java.awt.Dimension(postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
+
+        setArcBoxClip(postingBase, svgGenerator);
         drawBackground(svgGenerator, postingBase);
         drawThumbnail(posting, svgGenerator, postingBase);
+        svgGenerator.setClip(null);
         drawText(posting, svgGenerator, postingBase);
         drawFooter(posting, svgGenerator, postingBase);
         drawAuthorImg(posting, svgGenerator, postingBase);
@@ -62,26 +67,38 @@ public class ImageService {
         return SvgUtils.toByte(svgGenerator);
     }
 
-    private void drawBackground(SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        svgGenerator.setPaint(Color.WHITE);
-
-        RoundRectangle2D background = new RoundRectangle2D.Double(
+    private static void setArcBoxClip(PostingBase postingBase, SVGGraphics2D svgGenerator) {
+        Area combinedClip = new Area(new RoundRectangle2D.Double(
                 0, 0,
                 postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),
                 postingBase.getBoxArc().getWidth(), postingBase.getBoxArc().getHeight()
-        );
-        svgGenerator.fill(background);
-//        svgGenerator.fill(new Rectangle2D.Double(0, 0, postingType.getBoxWidth(), postingType.getBoxHeight()));
+        ));
+        svgGenerator.setClip(combinedClip);
+    }
+
+    private void drawBackground(SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        svgGenerator.setPaint(Color.WHITE);
+        svgGenerator.fill(
+                new Rectangle2D.Double(0, 0, postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
     }
 
     private void drawThumbnail(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        if (postingBase.getImg() == Dimensions.EMPTY) {
+            return;
+        }
         String imageUrl = posting.getThumbnail();
         if (imageUrl == null || imageUrl.isEmpty()) {
             imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
         }
 
-        try {
-            BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
+        Request request = new Request.Builder().url(imageUrl).build();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to download image: " + response);
+            }
+            InputStream inputStream = response.body().byteStream();
+            BufferedImage originalImage = ImageIO.read(inputStream);
+
             int originalWidth = originalImage.getWidth();
             int originalHeight = originalImage.getHeight();
 
@@ -91,41 +108,25 @@ public class ImageService {
             int targetY = 0;
             double originalAspect = (double) originalWidth / originalHeight;
             double targetAspect = (double) targetWidth / targetHeight;
-
-            int drawWidth, drawHeight;
-            int xOffset = 0, yOffset = 0;
+            int cropX = 0, cropY = 0, cropWidth, cropHeight;
 
             if (originalAspect > targetAspect) { // 원본 이미지 width > height
-                drawHeight = targetHeight;
-                drawWidth = (int) (targetHeight * originalAspect);
-                xOffset = (drawWidth - targetWidth) / 2;
+                cropHeight = originalHeight;
+                cropWidth = (int) (originalHeight * targetAspect);
+                cropX = (originalWidth - cropWidth) / 2;
             } else { // 원본 이미지 height > width
-                drawWidth = targetWidth;
-                drawHeight = (int) (targetWidth / originalAspect);
-                yOffset = (drawHeight - targetHeight) / 2;
+                cropWidth = originalWidth;
+                cropHeight = (int) (originalWidth / targetAspect);
+                cropY = (originalHeight - cropHeight) / 2;
             }
 
-            Area combinedClip = new Area(new RoundRectangle2D.Double(
-                    0, 0,
-                    postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),
-                    postingBase.getBoxArc().getWidth(), postingBase.getBoxArc().getHeight()
-            ));
-            combinedClip.intersect(new Area(new Rectangle2D.Double(
-                    targetX, targetY, targetWidth, targetHeight
-            )));
-
-            Shape originalClip = svgGenerator.getClip();
-            svgGenerator.setClip(combinedClip);
-
-            svgGenerator.drawImage(originalImage,
-                    targetX - xOffset,
-                    targetY - yOffset,
-                    drawWidth,
-                    drawHeight,
+            BufferedImage croppedImage = originalImage.getSubimage(cropX, cropY, cropWidth, cropHeight);
+            svgGenerator.drawImage(croppedImage,
+                    targetX,
+                    targetY,
+                    targetWidth,
+                    targetHeight,
                     null);
-
-            svgGenerator.setClip(originalClip);
-
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
         }
@@ -190,7 +191,7 @@ public class ImageService {
     }
 
     private void drawAuthorImg(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getBlogImage().getY() == -1) {
+        if (postingBase.getBlogImage() == Dimensions.EMPTY) {
             return;
         }
         String imageUrl = posting.getBlogImage();
@@ -199,24 +200,22 @@ public class ImageService {
             imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
         }
 
-        try {
-            BufferedImage originalImage = ImageIO.read(new URL(imageUrl));
-            BufferedImage circularImage = new BufferedImage(postingBase.getBlogImage().getWidth(),
-                    postingBase.getBlogImage().getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
+        Request request = new Request.Builder().url(imageUrl).build();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to download image: " + response);
+            }
+            InputStream inputStream = response.body().byteStream();
+            BufferedImage originalImage = ImageIO.read(inputStream);
 
-            Graphics2D g2d = circularImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            int imgWidth = postingBase.getBlogImage().getWidth();
+            int imgHeight = postingBase.getBlogImage().getHeight();
+            int imgX = postingBase.getTextPadding();
+            int imgY = postingBase.getBlogImage().getY();
 
-            g2d.fillOval(0, 0, postingBase.getBlogImage().getWidth(), postingBase.getBlogImage().getHeight());
-            g2d.setComposite(AlphaComposite.SrcIn);
-            g2d.drawImage(originalImage, 0, 0, postingBase.getBlogImage().getWidth(),
-                    postingBase.getBlogImage().getHeight(), null);
-            g2d.dispose();
-
-            svgGenerator.drawImage(circularImage, postingBase.getTextPadding(), postingBase.getBlogImage().getY(),
-                    null);
+            svgGenerator.setClip(new Ellipse2D.Double(imgX, imgY, imgWidth, imgHeight));
+            svgGenerator.drawImage(originalImage, imgX, imgY, imgWidth, imgHeight, null);
+            svgGenerator.setClip(null);
 
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
