@@ -12,7 +12,10 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -97,36 +100,55 @@ public class ImageService {
                 throw new IOException("Failed to download image: " + response);
             }
             InputStream inputStream = response.body().byteStream();
-            BufferedImage originalImage = ImageIO.read(inputStream);
 
-            int originalWidth = originalImage.getWidth();
-            int originalHeight = originalImage.getHeight();
+            BufferedImage originalImage = null;
+            ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream);
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInputStream);
 
-            int targetWidth = postingBase.getImg().getWidth();
-            int targetHeight = postingBase.getImg().getHeight();
-            int targetX = postingBase.getImg().getX();
-            int targetY = 0;
-            double originalAspect = (double) originalWidth / originalHeight;
-            double targetAspect = (double) targetWidth / targetHeight;
-            int cropX = 0, cropY = 0, cropWidth, cropHeight;
+            if (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                reader.setInput(imageInputStream);
 
-            if (originalAspect > targetAspect) { // 원본 이미지 width > height
-                cropHeight = originalHeight;
-                cropWidth = (int) (originalHeight * targetAspect);
-                cropX = (originalWidth - cropWidth) / 2;
-            } else { // 원본 이미지 height > width
-                cropWidth = originalWidth;
-                cropHeight = (int) (originalWidth / targetAspect);
-                cropY = (originalHeight - cropHeight) / 2;
+                String formatName = reader.getFormatName();
+                if ("gif".equalsIgnoreCase(formatName)) {
+                    // GIF의 첫 프레임만 읽어오기
+                    originalImage = reader.read(0);
+                } else {
+                    // GIF가 아닌 경우 일반적인 방법으로 이미지 읽기
+                    originalImage = ImageIO.read(imageInputStream);
+                }
+
+                int originalWidth = originalImage.getWidth();
+                int originalHeight = originalImage.getHeight();
+
+                int targetWidth = postingBase.getImg().getWidth();
+                int targetHeight = postingBase.getImg().getHeight();
+                int targetX = postingBase.getImg().getX();
+                int targetY = 0;
+                double originalAspect = (double) originalWidth / originalHeight;
+                double targetAspect = (double) targetWidth / targetHeight;
+                int cropX = 0, cropY = 0, cropWidth, cropHeight;
+
+                if (originalAspect > targetAspect) { // 원본 이미지 width > height
+                    cropHeight = originalHeight;
+                    cropWidth = (int) (originalHeight * targetAspect);
+                    cropX = (originalWidth - cropWidth) / 2;
+                } else { // 원본 이미지 height > width
+                    cropWidth = originalWidth;
+                    cropHeight = (int) (originalWidth / targetAspect);
+                    cropY = (originalHeight - cropHeight) / 2;
+                }
+
+                BufferedImage croppedImage = originalImage.getSubimage(cropX, cropY, cropWidth, cropHeight);
+                svgGenerator.drawImage(croppedImage,
+                        targetX,
+                        targetY,
+                        targetWidth,
+                        targetHeight,
+                        null);
+            } else {
+                throw new IOException("No suitable ImageReader found for this image format.");
             }
-
-            BufferedImage croppedImage = originalImage.getSubimage(cropX, cropY, cropWidth, cropHeight);
-            svgGenerator.drawImage(croppedImage,
-                    targetX,
-                    targetY,
-                    targetWidth,
-                    targetHeight,
-                    null);
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
         }
