@@ -14,6 +14,8 @@ public enum PostingBase {
             new Dimensions(217, 217, 0, -1),
             TextDimensions.EMPTY,
             TextDimensions.EMPTY,
+            TextDimensions.EMPTY,
+            TextDimensions.EMPTY,
             Dimensions.EMPTY,
             Dimensions.EMPTY,
             20, 2, 240, 240),
@@ -22,6 +24,8 @@ public enum PostingBase {
             new Dimensions(10, 10),
             new Dimensions(217, 126, 0, -1),
             new TextDimensions(217, -1, -1, 155, 14, 3, -1),
+            new TextDimensions(217, -1, -1, 40, 14, 8, -1),
+            TextDimensions.EMPTY,
             TextDimensions.EMPTY,
             Dimensions.EMPTY,
             Dimensions.EMPTY,
@@ -31,6 +35,8 @@ public enum PostingBase {
             new Dimensions(10, 10),
             new Dimensions(217, 217, 583, -1),
             new TextDimensions(583, -1, -1, 50, 23, 2, -1),
+            new TextDimensions(800, -1, -1, 50, 23, 2, -1),
+            new TextDimensions(-1, 1, 14, 3, -1),
             new TextDimensions(-1, 1, 14, 3, -1),
             Dimensions.EMPTY,
             Dimensions.EMPTY,
@@ -40,6 +46,8 @@ public enum PostingBase {
             new Dimensions(10, 10),
             Dimensions.EMPTY,
             new TextDimensions(430, -1, -1, 62, 14, 1, 1),
+            new TextDimensions(430, -1, -1, 62, 14, 1, 1),
+            new TextDimensions(-1, 1, 12, 1, -1),
             new TextDimensions(-1, 1, 12, 1, -1),
             Dimensions.EMPTY,
             new Dimensions(12, 12, 420, 24),
@@ -49,7 +57,9 @@ public enum PostingBase {
             new Dimensions(10, 10),
             new Dimensions(320, 167, 0, -1),
             new TextDimensions(300, -1, -1, 200, 16, 1, 1),
+            new TextDimensions(300, -1, -1, 40, 16, 2, 1),
             new TextDimensions(-1, 1, 14, 3, -1),
+            new TextDimensions(-1, 1, 14, 7, -1),
             new Dimensions(24, 24, -1, 340),
             Dimensions.EMPTY,
             20, 1, 320, 320),
@@ -60,7 +70,9 @@ public enum PostingBase {
     private final Dimensions boxArc;
     private final Dimensions img;
     private final TextDimensions title;
+    private final TextDimensions noThumbTitle;
     private final TextDimensions content;
+    private final TextDimensions noThumbContent;
     private final Dimensions blogImage;
     private final Dimensions watermark;
     private final int textPadding;

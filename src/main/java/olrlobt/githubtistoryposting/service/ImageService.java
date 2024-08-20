@@ -24,6 +24,7 @@ import olrlobt.githubtistoryposting.domain.BlogInfo;
 import olrlobt.githubtistoryposting.domain.Dimensions;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
+import olrlobt.githubtistoryposting.domain.TextDimensions;
 import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.SvgUtils;
 import org.apache.batik.bridge.BridgeContext;
@@ -91,7 +92,7 @@ public class ImageService {
         }
         String imageUrl = posting.getThumbnail();
         if (imageUrl == null || imageUrl.isEmpty()) {
-            imageUrl = BlogInfo.NOT_FOUND.getBlogThumb();
+            return;
         }
 
         Request request = new Request.Builder().url(imageUrl).build();
@@ -159,28 +160,39 @@ public class ImageService {
             return;
         }
         svgGenerator.setPaint(Color.BLACK);
+
+        TextDimensions title = postingBase.getTitle();
+        if (posting.getThumbnail() == null) {
+            title = postingBase.getNoThumbTitle();
+        }
+
         int titleHeight = drawMultilineText(
                 svgGenerator,
                 posting.getTitle(),
                 postingBase.getTextPadding(),
-                postingBase.getTitle().getY(),
-                postingBase.getTitle().getWidth() - postingBase.getTextPadding() * 2,
-                postingBase.getTitle().getMaxLine(),
-                postingBase.getTitle().getWeight() == 1 ?
-                        FontUtils.load_b(postingBase.getTitle().getSize())
-                        : FontUtils.load_m(postingBase.getTitle().getSize()));
+                title.getY(),
+                title.getWidth() - postingBase.getTextPadding() * 2,
+                title.getMaxLine(),
+                title.getWeight() == 1 ?
+                        FontUtils.load_b(title.getSize())
+                        : FontUtils.load_m(title.getSize()));
 
-        if (postingBase.getContent().getMaxLine() == -1 || posting.getContent().isEmpty()) {
+        if (postingBase.getContent() == TextDimensions.EMPTY || posting.getContent().isEmpty()) {
             return;
         }
+        TextDimensions content = postingBase.getContent();
+        if (posting.getThumbnail() == null) {
+            content = postingBase.getNoThumbContent();
+        }
+
         drawMultilineText(
                 svgGenerator,
                 posting.getContent(),
                 postingBase.getTextPadding(),
                 titleHeight,
-                postingBase.getTitle().getWidth() - postingBase.getTextPadding() * 2,
-                postingBase.getContent().getMaxLine(),
-                FontUtils.load_m(postingBase.getContent().getSize())
+                title.getWidth() - postingBase.getTextPadding() * 2,
+                content.getMaxLine(),
+                FontUtils.load_m(content.getSize())
         );
     }
 

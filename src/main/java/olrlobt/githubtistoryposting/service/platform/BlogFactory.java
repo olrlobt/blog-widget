@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 public class BlogFactory {
 	private final Map<String, Blog> blogStrategyMap;
 
-	public BlogFactory(Tistory tistory, Velog velog, GithubPages githubPages, Anything anything) {
+	public BlogFactory(Tistory tistory, Velog velog, Anything anything,
+					   GithubPages githubPages) {
 		blogStrategyMap = new HashMap<>();
 		blogStrategyMap.put("tistory", tistory);
 		blogStrategyMap.put("t", tistory);

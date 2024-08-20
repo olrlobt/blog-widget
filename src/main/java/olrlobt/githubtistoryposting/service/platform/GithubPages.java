@@ -2,29 +2,42 @@ package olrlobt.githubtistoryposting.service.platform;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.Watermark;
+import olrlobt.githubtistoryposting.service.platform.GithubPagesResponse.Entry;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.SvgUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.svg.SVGDocument;
 import org.yaml.snakeyaml.Yaml;
 
 @Component
 public class GithubPages implements Blog {
 
-    private final String POSTS_PATH = ".github.io/contents/_posts";
-    private final String BASE_URL = "https://api.github.com/repos/";
-    private final WebClient WEB_CLIENT = WebClient.create();
+    private final WebClient WEB_CLIENT = WebClient.builder()
+            .baseUrl("https://api.github.com/graphql")
+            .build();
+    private final String QUERY_POSTINGS =
+            "query($username: String!, $repository: String!, $expression: String!) { "
+                    + "user(login: $username) { avatarUrl } "
+                    + "repository(owner: $username, name: $repository) { "
+                    + "object(expression: $expression) { ... on Tree { entries { name } } } } }";
+
+    private final String QUERY_POSTING =
+            "query($username: String!, $repository: String!, $expression: String!) { "
+                    + "repository(owner: $username, name: $repository) { "
+                    + "object(expression: $expression) { ... on Blob { text } } } }";
+
+
     @Value("${github.token}")
     private String githubToken;
     @Value("classpath:static/img/github.svg")
@@ -39,45 +52,37 @@ public class GithubPages implements Blog {
 
     @Override
     public Posting posting(String blogName, int index, PostingBase postingBase) throws IOException {
-        double start = System.currentTimeMillis();
-        Posting request = request(BASE_URL + blogName + "/" + blogName + POSTS_PATH, index, blogName);
-        double end = System.currentTimeMillis();
 
-        System.out.println("(end - start) = " + (end - start));
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("username", blogName);
+        variables.put("repository", blogName + ".github.io");
+        variables.put("expression", "HEAD:_posts");
 
-        return request;
+        GithubPagesResponse response = request(QUERY_POSTINGS, variables);
+        List<Entry> entries = response.getData().getRepository()
+                .getObject().getEntries();
+        Entry post = entries.get(entries.size() - index - 1);
+
+        variables.put("expression", "HEAD:_posts/" + post.getName());
+
+        GithubPagesResponse response2 = request(QUERY_POSTING, variables);
+        String content = response2.getData().getRepository()
+                .getObject().getText();
+        String avatarUrl = response.getData().getUser().getAvatarUrl();
+        return parseResponse(content, blogName, avatarUrl, postingBase);
     }
 
-    private Posting request(String uri, int index, String blogName) {
-        List<GithubPagesResponse> githubPagesResponses = WEB_CLIENT.get()
-                .uri(UriComponentsBuilder.fromHttpUrl(uri).build(true).toUri())
+    private GithubPagesResponse request(String query, Map<String, Object> variables) {
+        return WEB_CLIENT.post()
+                .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + githubToken)
+                .bodyValue(Map.of("query", query, "variables", variables))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<GithubPagesResponse>>() {
-                })
+                .bodyToMono(GithubPagesResponse.class)
                 .block();
-        int size = githubPagesResponses.size();
-        GithubPagesResponse githubPagesResponse = githubPagesResponses.get(size - index - 1);
-        return getPosts(githubPagesResponse, blogName);
     }
 
-    private Posting getPosts(GithubPagesResponse githubPagesResponse, String blogName) {
-        try {
-            String response = WEB_CLIENT.get()
-                    .uri(githubPagesResponse.getDownload_url())
-                    .header("Authorization", "Bearer " + githubToken)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-            return parseResponse(response, blogName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private Posting parseResponse(String response, String blogName) {
-
+    private Posting parseResponse(String response, String blogName, String avatarUrl, PostingBase postingBase) {
         String[] parts = response.split("---\\s*\\n", 3);
         String yamlPart = parts[1];
         String contentPart = parts.length > 2 ? parts[2].trim() : "";
@@ -88,9 +93,9 @@ public class GithubPages implements Blog {
         String siteName = blogName + ".github.io";
         String url = "https://" + siteName;
 
-        return new Posting(null, null, (String) yamlData.get("author"),
+        return new Posting(null, avatarUrl, (String) yamlData.get("author"),
                 (String) yamlData.get("title"), contentPart, DateUtils.parser((String) yamlData.get("date")),
-                url, siteName, PostingBase.BlogPostingCard, watermark);
+                url, siteName, postingBase, watermark);
     }
 
     @Override
