@@ -17,6 +17,7 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -27,13 +28,14 @@ import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.TextDimensions;
 import olrlobt.githubtistoryposting.utils.FontUtils;
-import olrlobt.githubtistoryposting.utils.SvgUtils;
+import olrlobt.githubtistoryposting.utils.SvgPool;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.bridge.UserAgentAdapter;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
@@ -41,35 +43,43 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGDocument;
 
 @Service
+@Lazy(value = false)
 @Slf4j
+@RequiredArgsConstructor
 public class ImageService {
-    private final String TRUNCATE = "...";
-    private final Color STROKE_COLOR = Color.decode("#d0d7de");
+    private static final String TRUNCATE = "...";
+    private static final Color STROKE_COLOR = Color.decode("#d0d7de");
     //    private final Color STROKE_COLOR = new Color(139, 139, 139, 34);
     @Value("classpath:static/img/No_Image.jpg")
     private Resource NO_IMAGE;
     @Value("classpath:static/img/No_Profile.webp")
     private Resource NO_PROFILE;
     private final OkHttpClient client = new OkHttpClient();
+    private final SvgPool svgPool;
 
     public byte[] createSvgImageBox(Posting posting) throws IOException {
-        SVGGraphics2D svgGenerator = SvgUtils.init();
-        PostingBase postingBase = posting.getPostingBase();
-        svgGenerator.setSVGCanvasSize(
-                new java.awt.Dimension(postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
+        SVGGraphics2D svgGenerator = null;
 
-        setArcBoxClip(postingBase, svgGenerator);
-        drawBackground(svgGenerator, postingBase);
-        drawThumbnail(posting, svgGenerator, postingBase);
-        svgGenerator.setClip(null);
-        drawText(posting, svgGenerator, postingBase);
-        drawFooter(posting, svgGenerator, postingBase);
-        drawAuthorImg(posting, svgGenerator, postingBase);
-        drawAuthorText(posting, svgGenerator, postingBase);
-        drawWatermark(posting, svgGenerator, postingBase);
-        drawStroke(svgGenerator, postingBase);
+        try {
+            svgGenerator = svgPool.borrowObject();
+            PostingBase postingBase = posting.getPostingBase();
+            svgGenerator.setSVGCanvasSize(
+                    new java.awt.Dimension(postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
 
-        return SvgUtils.toByte(svgGenerator);
+            setArcBoxClip(postingBase, svgGenerator);
+            drawBackground(svgGenerator, postingBase);
+            drawThumbnail(posting, svgGenerator, postingBase);
+            svgGenerator.setClip(null);
+            drawText(posting, svgGenerator, postingBase);
+            drawFooter(posting, svgGenerator, postingBase);
+            drawAuthorImg(posting, svgGenerator, postingBase);
+            drawAuthorText(posting, svgGenerator, postingBase);
+            drawWatermark(posting, svgGenerator, postingBase);
+            drawStroke(svgGenerator, postingBase);
+            return svgPool.toByte(svgGenerator);
+        } finally {
+            svgPool.returnObject(svgGenerator);
+        }
     }
 
     private static void setArcBoxClip(PostingBase postingBase, SVGGraphics2D svgGenerator) {
