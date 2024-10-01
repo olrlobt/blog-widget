@@ -1,7 +1,9 @@
 package olrlobt.githubtistoryposting.config;
 
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -24,5 +26,10 @@ public class CacheConfig {
 			.initialCapacity(30)
 			.maximumSize(50)
 			.expireAfterAccess(30, TimeUnit.MINUTES);
+	}
+
+	@PostConstruct
+	public void disableImageIOCache() {
+		ImageIO.setUseCache(false);
 	}
 }
