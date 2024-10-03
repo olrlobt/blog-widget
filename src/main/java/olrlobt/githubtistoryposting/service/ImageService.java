@@ -14,6 +14,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -62,27 +64,38 @@ public class ImageService {
 
         try {
             svgGenerator = svgPool.borrowObject();
+            final SVGGraphics2D finalSvgGenerator = svgGenerator;
             PostingBase postingBase = posting.getPostingBase();
-            svgGenerator.setSVGCanvasSize(
-                    new java.awt.Dimension(postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
+            final PostingBase finalPostingBase = postingBase;
 
-            setArcBoxClip(postingBase, svgGenerator);
-            drawBackground(svgGenerator, postingBase);
-            drawThumbnail(posting, svgGenerator, postingBase);
-            svgGenerator.setClip(null);
-            drawText(posting, svgGenerator, postingBase);
-            drawFooter(posting, svgGenerator, postingBase);
-            drawAuthorImg(posting, svgGenerator, postingBase);
-            drawAuthorText(posting, svgGenerator, postingBase);
-            drawWatermark(posting, svgGenerator, postingBase);
-            drawStroke(svgGenerator, postingBase);
-            return svgPool.toByte(svgGenerator);
+            finalSvgGenerator.setSVGCanvasSize(
+                    new java.awt.Dimension(finalPostingBase.getBox().getWidth(), finalPostingBase.getBox().getHeight()));
+
+            CompletableFuture<Void> backgroundTask = CompletableFuture.runAsync(() -> drawBackground(finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> thumbnailTask = CompletableFuture.runAsync(() -> drawThumbnail(posting, finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> textTask = backgroundTask.thenRunAsync(() -> drawText(posting, finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> footerTask = textTask.thenRunAsync(() -> drawFooter(posting, finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> authorImgTask = backgroundTask.thenRunAsync(() -> drawAuthorImg(posting, finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> authorTextTask = footerTask.thenRunAsync(() -> drawAuthorText(posting, finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> watermarkTask = CompletableFuture.runAsync(() -> drawWatermark(posting, finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> strokeTask = authorTextTask.thenRunAsync(() -> drawStroke(finalSvgGenerator, finalPostingBase));
+
+            CompletableFuture<Void> allTasks = CompletableFuture.allOf(
+                    backgroundTask, thumbnailTask, textTask, footerTask, authorImgTask, authorTextTask, watermarkTask, strokeTask);
+
+            try {
+                allTasks.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException("Error occurred during SVG generation", e);
+            }
+
+            return svgPool.toByte(finalSvgGenerator);
         } finally {
             svgPool.returnObject(svgGenerator);
         }
     }
 
-    private static void setArcBoxClip(PostingBase postingBase, SVGGraphics2D svgGenerator) {
+    private void setArcBoxClip(PostingBase postingBase, SVGGraphics2D svgGenerator) {
         Area combinedClip = new Area(new RoundRectangle2D.Double(
                 0, 0,
                 postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),
@@ -92,6 +105,7 @@ public class ImageService {
     }
 
     private void drawBackground(SVGGraphics2D svgGenerator, PostingBase postingBase) {
+        setArcBoxClip(postingBase, svgGenerator);
         svgGenerator.setPaint(Color.WHITE);
         svgGenerator.fill(
                 new Rectangle2D.Double(0, 0, postingBase.getBox().getWidth(), postingBase.getBox().getHeight()));
@@ -169,13 +183,13 @@ public class ImageService {
         if (postingBase.getTitle().getMaxLine() == -1) {
             return;
         }
-        svgGenerator.setPaint(Color.BLACK);
 
         TextDimensions title = postingBase.getTitle();
         if (posting.getThumbnail() == null) {
             title = postingBase.getNoThumbTitle();
         }
 
+        svgGenerator.setPaint(Color.BLACK);
         int titleHeight = drawMultilineText(
                 svgGenerator,
                 posting.getTitle(),
