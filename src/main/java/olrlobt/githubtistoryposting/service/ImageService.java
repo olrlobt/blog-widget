@@ -37,7 +37,6 @@ import org.apache.batik.bridge.UserAgentAdapter;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
@@ -45,7 +44,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGDocument;
 
 @Service
-@Lazy(value = false)
 @Slf4j
 @RequiredArgsConstructor
 public class ImageService {
@@ -78,7 +76,8 @@ public class ImageService {
             CompletableFuture<Void> authorImgTask = backgroundTask.thenRunAsync(() -> drawAuthorImg(posting, finalSvgGenerator, finalPostingBase));
             CompletableFuture<Void> authorTextTask = footerTask.thenRunAsync(() -> drawAuthorText(posting, finalSvgGenerator, finalPostingBase));
             CompletableFuture<Void> watermarkTask = CompletableFuture.runAsync(() -> drawWatermark(posting, finalSvgGenerator, finalPostingBase));
-            CompletableFuture<Void> strokeTask = authorTextTask.thenRunAsync(() -> drawStroke(finalSvgGenerator, finalPostingBase));
+            CompletableFuture<Void> strokeTask = CompletableFuture.allOf(thumbnailTask, authorTextTask)
+                    .thenRunAsync(() -> drawStroke(finalSvgGenerator, finalPostingBase));
 
             CompletableFuture<Void> allTasks = CompletableFuture.allOf(
                     backgroundTask, thumbnailTask, textTask, footerTask, authorImgTask, authorTextTask, watermarkTask, strokeTask);
@@ -363,7 +362,6 @@ public class ImageService {
 
     private void drawStroke(SVGGraphics2D svgGenerator, PostingBase postingBase) {
         svgGenerator.setPaint(STROKE_COLOR);
-
         RoundRectangle2D stroke = new RoundRectangle2D.Double(
                 0, 0,
                 postingBase.getBox().getWidth(), postingBase.getBox().getHeight(),

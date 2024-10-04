@@ -1,6 +1,5 @@
 package olrlobt.githubtistoryposting.utils;
 
-import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,13 +11,11 @@ import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.svg.SVGDocument;
 
 @Component
-@Lazy(false)
 public class SvgPool {
     private final GenericObjectPool<SVGGraphics2D> pool;
 
@@ -30,25 +27,20 @@ public class SvgPool {
         config.setBlockWhenExhausted(true); // 풀에 여유 객체가 없을 때 대기
 
         this.pool = new GenericObjectPool<>(new SvgFactory(), config);
+
+        try {
+            for (int i = 0; i < pool.getMinIdle(); i++) {
+                pool.addObject();
+            }
+        } catch (Exception ignored) {
+        }
     }
 
-    // 객체 대여
     public SVGGraphics2D borrowObject() {
         try {
             return pool.borrowObject();
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @PostConstruct
-    public void initializePool() {
-        try {
-            for (int i = 0; i < pool.getMinIdle(); i++) {
-                pool.addObject();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
