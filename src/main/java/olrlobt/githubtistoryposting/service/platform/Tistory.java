@@ -1,10 +1,13 @@
 package olrlobt.githubtistoryposting.service.platform;
 
 import jakarta.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import olrlobt.githubtistoryposting.domain.BlogInfo;
@@ -15,7 +18,6 @@ import olrlobt.githubtistoryposting.domain.TistoryTheme;
 import olrlobt.githubtistoryposting.domain.Watermark;
 import olrlobt.githubtistoryposting.utils.DateUtils;
 import olrlobt.githubtistoryposting.utils.ScrapingUtils;
-import olrlobt.githubtistoryposting.utils.SvgUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.RedirectView;
-import org.w3c.dom.svg.SVGDocument;
 
 @Slf4j
 @Component
@@ -32,14 +33,24 @@ import org.w3c.dom.svg.SVGDocument;
 public class Tistory implements Blog {
 
     private final ScrapingUtils scrapingUtils;
+
+    // PNG 파일 경로
+    @Value("classpath:static/img/tistory.png")
+    private Resource watermarkPngImg;
+
     @Value("classpath:static/img/tistory.svg")
-    private Resource watermarkImg;
+    private Resource watermarkSvgImg;
+
     private Watermark watermark;
 
     @PostConstruct
     public void init() {
-        SVGDocument svgDocument = SvgUtils.loadSVGDocument(watermarkImg);
-        watermark = new Watermark(svgDocument, "#ec6552");
+        try {
+            BufferedImage watermarkImage = ImageIO.read(watermarkPngImg.getInputStream());
+            watermark = new Watermark(watermarkImage);
+        } catch (IOException e) {
+            log.error("Failed to load PNG watermark image", e);
+        }
     }
 
     @Override
@@ -101,15 +112,24 @@ public class Tistory implements Blog {
     }
 
     private TistoryTheme findTistoryTheme(Document document) {
-        String themeIndex = document.selectFirst("body").className().split(" ")[0];
-        if (themeIndex.isEmpty()) {
-            themeIndex = document.selectFirst("html").id();
-            if (themeIndex.isEmpty()) {
-                themeIndex = document.selectFirst(".emph_t").text();
-            }
-        }
+        Element body = document.selectFirst("body");
+        Element html = document.selectFirst("html");
+        Element emphT = document.selectFirst(".emph_t");
+
+        String themeIndex = Optional.ofNullable(body)
+                .map(Element::className)
+                .map(classes -> classes.split(" ")[0])
+                .filter(s -> !s.isEmpty())
+                .orElseGet(() -> Optional.ofNullable(html)
+                        .map(Element::id)
+                        .filter(s -> !s.isEmpty())
+                        .orElseGet(() -> Optional.ofNullable(emphT)
+                                .map(Element::text)
+                                .orElse("")));
+
         return TistoryTheme.findTheme(themeIndex);
     }
+
 
     private int getPostingOfPageNum(Document document, TistoryTheme theme) {
         return document.select(theme.getPostingList()).size();
@@ -127,7 +147,7 @@ public class Tistory implements Blog {
         LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
         String sanitizeUrl = UrlUtils.sanitizeUrl(url);
         return new Posting(thumbnail, blogImage, blogName, title, content, date,
-                sanitizeUrl, blogName + ".tistory", postingBase, watermark.clone());
+                sanitizeUrl, blogName + ".tistory", postingBase, watermark);
     }
 
     private static String findThumbnail(Element posting, String themeTag) {

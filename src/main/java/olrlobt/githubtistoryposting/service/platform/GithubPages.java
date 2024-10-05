@@ -1,23 +1,23 @@
 package olrlobt.githubtistoryposting.service.platform;
 
 import jakarta.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.Watermark;
 import olrlobt.githubtistoryposting.service.platform.GithubPagesResponse.Entry;
 import olrlobt.githubtistoryposting.utils.DateUtils;
-import olrlobt.githubtistoryposting.utils.SvgUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
-import org.w3c.dom.svg.SVGDocument;
 import org.yaml.snakeyaml.Yaml;
 
 @Component
@@ -42,12 +42,18 @@ public class GithubPages implements Blog {
     private String githubToken;
     @Value("classpath:static/img/github.svg")
     private Resource watermarkImg;
+    @Value("classpath:static/img/github.png")
+    private Resource watermarkPngImg;
     private Watermark watermark;
 
     @PostConstruct
     public void init() {
-        SVGDocument svgDocument = SvgUtils.loadSVGDocument(watermarkImg);
-        watermark = new Watermark(svgDocument, "#000000");
+        try {
+            BufferedImage watermarkImage = ImageIO.read(watermarkPngImg.getInputStream());
+            watermark = new Watermark(watermarkImage);
+        } catch (IOException e) {
+//            log.error("Failed to load PNG watermark image", e);
+        }
     }
 
     @Override

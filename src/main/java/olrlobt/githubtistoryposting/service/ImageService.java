@@ -31,9 +31,6 @@ import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.TextDimensions;
 import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.SvgPool;
-import org.apache.batik.bridge.BridgeContext;
-import org.apache.batik.bridge.GVTBuilder;
-import org.apache.batik.bridge.UserAgentAdapter;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +38,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.svg.SVGDocument;
 
 @Service
 @Slf4j
@@ -310,53 +306,16 @@ public class ImageService {
     }
 
     private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (posting.getWatermark() == null || postingBase.getWatermark().getX() == -1
-                || postingBase.getWatermark().getY() == -1) {
+        if (postingBase.getWatermark().getX() == -1 || postingBase.getWatermark().getY() == -1) {
             return;
         }
+        BufferedImage watermarkImage = posting.getWatermark().getBufferedImage();
+        int x = postingBase.getWatermark().getX();
+        int y = postingBase.getWatermark().getY();
+        int width = postingBase.getWatermark().getWidth();
+        int height = postingBase.getWatermark().getHeight();
 
-        SVGDocument svgDocument = posting.getWatermark().getSvgDocument();
-
-        if (svgDocument != null) {
-            Element svgElement = svgDocument.getDocumentElement();
-            changeSVGColor(svgElement, posting.getWatermark().getColor());
-
-            UserAgentAdapter userAgent = new UserAgentAdapter();
-            BridgeContext bridgeContext = new BridgeContext(userAgent);
-            GraphicsNode svgGraphicsNode = new GVTBuilder().build(bridgeContext, svgDocument);
-
-            AffineTransform scaleTransform = getScaleTransform(svgGraphicsNode,
-                    posting.getPostingBase().getWatermark().getWidth(),
-                    posting.getPostingBase().getWatermark().getHeight());
-
-            AffineTransform transform = new AffineTransform();
-            transform.translate(postingBase.getWatermark().getX(), postingBase.getWatermark().getY());
-            transform.concatenate(scaleTransform);
-
-            svgGraphicsNode.setTransform(transform);
-            svgGraphicsNode.paint(svgGenerator);
-        }
-    }
-
-
-    private void changeSVGColor(Element svgElement, String color) {
-        String[] tags = {"circle", "path"};
-
-        for (String tag : tags) {
-            NodeList elements = svgElement.getElementsByTagNameNS("*", tag);
-            for (int i = 0; i < elements.getLength(); i++) {
-                Element element = (Element) elements.item(i);
-                element.setAttribute("fill", color);
-            }
-        }
-    }
-
-    private AffineTransform getScaleTransform(GraphicsNode svgGraphicsNode, double targetWidth, double targetHeight) {
-        double originalWidth = svgGraphicsNode.getPrimitiveBounds().getWidth();
-        double originalHeight = svgGraphicsNode.getPrimitiveBounds().getHeight();
-        double scaleX = targetWidth / originalWidth;
-        double scaleY = targetHeight / originalHeight;
-        return AffineTransform.getScaleInstance(scaleX, scaleY);
+        svgGenerator.drawImage(watermarkImage, x, y, width, height, null);
     }
 
     private void drawStroke(SVGGraphics2D svgGenerator, PostingBase postingBase) {

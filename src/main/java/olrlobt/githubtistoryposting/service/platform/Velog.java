@@ -1,13 +1,14 @@
 package olrlobt.githubtistoryposting.service.platform;
 
 import jakarta.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import olrlobt.githubtistoryposting.domain.Posting;
 import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.Watermark;
 import olrlobt.githubtistoryposting.utils.DateUtils;
-import olrlobt.githubtistoryposting.utils.SvgUtils;
 import olrlobt.githubtistoryposting.utils.UrlUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -15,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.view.RedirectView;
-import org.w3c.dom.svg.SVGDocument;
 
 @Component
 public class Velog implements Blog {
@@ -30,12 +30,19 @@ public class Velog implements Blog {
     private final String QUERY_BLOG = "query User($username: String) {user(username: $username) { username profile { thumbnail }}}";
     @Value("classpath:static/img/velog.svg")
     private Resource watermarkImg;
+    @Value("classpath:static/img/velog.png")
+    private Resource watermarkPngImg;
+
     private Watermark watermark;
 
     @PostConstruct
     public void init() {
-        SVGDocument svgDocument = SvgUtils.loadSVGDocument(watermarkImg);
-        watermark = new Watermark(svgDocument, "#5fc69a");
+        try {
+            BufferedImage watermarkImage = ImageIO.read(watermarkPngImg.getInputStream());
+            watermark = new Watermark(watermarkImage);
+        } catch (IOException e) {
+//            log.error("Failed to load PNG watermark image", e);
+        }
     }
 
     @Override
@@ -59,7 +66,7 @@ public class Velog implements Blog {
                 encodedUrlSlug,
                 blogName + ".log",
                 postingBase,
-                watermark.clone());
+                watermark);
     }
 
     @Override
