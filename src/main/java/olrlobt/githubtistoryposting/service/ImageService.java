@@ -129,49 +129,48 @@ public class ImageService {
                 BufferedImage originalImage = null;
                 ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream);
                 Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInputStream);
-
-                if (readers.hasNext()) {
-                    ImageReader reader = readers.next();
-                    reader.setInput(imageInputStream);
-
-                    String formatName = reader.getFormatName();
-                    if ("gif".equalsIgnoreCase(formatName)) {
-                        originalImage = reader.read(0);
-                    } else {
-                        originalImage = ImageIO.read(imageInputStream);
-                    }
-
-                    int originalWidth = originalImage.getWidth();
-                    int originalHeight = originalImage.getHeight();
-
-                    int targetWidth = postingBase.getImg().getWidth();
-                    int targetHeight = postingBase.getImg().getHeight();
-                    int targetX = postingBase.getImg().getX();
-                    int targetY = 0;
-                    double originalAspect = (double) originalWidth / originalHeight;
-                    double targetAspect = (double) targetWidth / targetHeight;
-                    int cropX = 0, cropY = 0, cropWidth, cropHeight;
-
-                    if (originalAspect > targetAspect) {
-                        cropHeight = originalHeight;
-                        cropWidth = (int) (originalHeight * targetAspect);
-                        cropX = (originalWidth - cropWidth) / 2;
-                    } else {
-                        cropWidth = originalWidth;
-                        cropHeight = (int) (originalWidth / targetAspect);
-                        cropY = (originalHeight - cropHeight) / 2;
-                    }
-
-                    BufferedImage croppedImage = originalImage.getSubimage(cropX, cropY, cropWidth, cropHeight);
-                    svgGenerator.drawImage(croppedImage,
-                            targetX,
-                            targetY,
-                            targetWidth,
-                            targetHeight,
-                            null);
-                } else {
+                if (!readers.hasNext()) {
                     throw new IOException("No suitable ImageReader found for this image format.");
                 }
+
+                ImageReader reader = readers.next();
+                reader.setInput(imageInputStream);
+
+                String formatName = reader.getFormatName();
+                if ("gif".equalsIgnoreCase(formatName)) {
+                    originalImage = reader.read(0);
+                } else {
+                    originalImage = ImageIO.read(imageInputStream);
+                }
+
+                int originalWidth = originalImage.getWidth();
+                int originalHeight = originalImage.getHeight();
+
+                int targetWidth = postingBase.getImg().getWidth();
+                int targetHeight = postingBase.getImg().getHeight();
+                int targetX = postingBase.getImg().getX();
+                int targetY = 0;
+                double originalAspect = (double) originalWidth / originalHeight;
+                double targetAspect = (double) targetWidth / targetHeight;
+                int cropX = 0, cropY = 0, cropWidth, cropHeight;
+
+                if (originalAspect > targetAspect) {
+                    cropHeight = originalHeight;
+                    cropWidth = (int) (originalHeight * targetAspect);
+                    cropX = (originalWidth - cropWidth) / 2;
+                } else {
+                    cropWidth = originalWidth;
+                    cropHeight = (int) (originalWidth / targetAspect);
+                    cropY = (originalHeight - cropHeight) / 2;
+                }
+
+                BufferedImage croppedImage = originalImage.getSubimage(cropX, cropY, cropWidth, cropHeight);
+                svgGenerator.drawImage(croppedImage,
+                        targetX,
+                        targetY,
+                        targetWidth,
+                        targetHeight,
+                        null);
             }
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);

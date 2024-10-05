@@ -1,8 +1,7 @@
 package olrlobt.githubtistoryposting.domain;
 
-import java.util.HashMap;
 import java.util.Map;
-
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 
 @Getter
@@ -30,7 +29,7 @@ public enum TistoryTheme {
 	private static final Map<String, TistoryTheme> blogTags;
 
 	static {
-		blogTags = new HashMap<>();
+		blogTags = new ConcurrentHashMap<>();
 		for (TistoryTheme tag : values()) {
 			blogTags.put(tag.getBlogTheme(), tag);
 		}

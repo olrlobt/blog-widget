@@ -1,5 +1,6 @@
 package olrlobt.githubtistoryposting.utils;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,12 +51,13 @@ public class SvgPool {
     }
 
     public byte[] toByte(SVGGraphics2D svgGenerator) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Writer out = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(2097152); // 2MB
+        Writer out = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), 65536);
         svgGenerator.stream(out, true);
         out.close();
         return outputStream.toByteArray();
     }
+
 
     public static SVGDocument loadSVGDocument(Resource resource) {
         try (InputStream inputStream = resource.getInputStream()) {
