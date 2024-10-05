@@ -3,7 +3,6 @@ package olrlobt.githubtistoryposting.service;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -15,8 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import olrlobt.githubtistoryposting.domain.BlogInfo;
 import olrlobt.githubtistoryposting.domain.Dimensions;
 import olrlobt.githubtistoryposting.domain.Posting;
@@ -31,13 +31,10 @@ import olrlobt.githubtistoryposting.domain.PostingBase;
 import olrlobt.githubtistoryposting.domain.TextDimensions;
 import olrlobt.githubtistoryposting.utils.FontUtils;
 import olrlobt.githubtistoryposting.utils.SvgPool;
-import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 @Service
 @Slf4j
@@ -53,7 +50,7 @@ public class ImageService {
     private final OkHttpClient client = new OkHttpClient();
     private final SvgPool svgPool;
 
-    public byte[] createSvgImageBox(Posting posting) throws IOException {
+    public byte[] createSvgImageBox(Posting posting) {
         SVGGraphics2D svgGenerator = null;
 
         try {
@@ -78,13 +75,10 @@ public class ImageService {
             CompletableFuture<Void> allTasks = CompletableFuture.allOf(
                     backgroundTask, thumbnailTask, textTask, footerTask, authorImgTask, authorTextTask, watermarkTask, strokeTask);
 
-            try {
-                allTasks.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException("Error occurred during SVG generation", e);
-            }
-
+            allTasks.get();
             return svgPool.toByte(finalSvgGenerator);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             svgPool.returnObject(svgGenerator);
         }
@@ -258,17 +252,47 @@ public class ImageService {
                 throw new IOException("Failed to download image: " + response);
             }
 
-            try (InputStream inputStream = new BufferedInputStream(response.body().byteStream())) {
-                BufferedImage originalImage = ImageIO.read(inputStream);
+            ResponseBody responseBody = response.body();
+            if (responseBody == null) {
+                throw new IOException("Response body is null: " + response);
+            }
 
-                int imgWidth = postingBase.getBlogImage().getWidth();
-                int imgHeight = postingBase.getBlogImage().getHeight();
-                int imgX = postingBase.getTextPadding();
-                int imgY = postingBase.getBlogImage().getY();
+            try (InputStream inputStream = new BufferedInputStream(responseBody.byteStream());
+                 ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream)) {
 
-                svgGenerator.setClip(new Ellipse2D.Double(imgX, imgY, imgWidth, imgHeight));
-                svgGenerator.drawImage(originalImage, imgX, imgY, imgWidth, imgHeight, null);
-                svgGenerator.setClip(null);
+                Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInputStream);
+                if (!readers.hasNext()) {
+                    throw new IOException("No suitable ImageReader found for this image format.");
+                }
+
+                ImageReader reader = readers.next();
+                try {
+                    reader.setInput(imageInputStream);
+
+                    int imgWidth = postingBase.getBlogImage().getWidth();
+                    int imgHeight = postingBase.getBlogImage().getHeight();
+                    int imgX = postingBase.getTextPadding();
+                    int imgY = postingBase.getBlogImage().getY();
+                    int originalWidth = reader.getWidth(0);
+                    int originalHeight = reader.getHeight(0);
+
+                    // 서브샘플링 비율 계산
+                    int subsampleX = originalWidth / imgWidth;
+                    int subsampleY = originalHeight / imgHeight;
+                    int subsample = Math.max(1, Math.min(subsampleX, subsampleY));
+
+                    ImageReadParam param = reader.getDefaultReadParam();
+                    param.setSourceSubsampling(subsample, subsample, 0, 0);
+
+                    BufferedImage originalImage = reader.read(0, param);
+
+                    svgGenerator.setClip(new Ellipse2D.Double(imgX, imgY, imgWidth, imgHeight));
+                    svgGenerator.drawImage(originalImage, imgX, imgY, imgWidth, imgHeight, null);
+                    svgGenerator.setClip(null);
+
+                } finally {
+                    reader.dispose();
+                }
             }
         } catch (IOException e) {
             log.error("Failed to load image from URL: {}", imageUrl, e);
@@ -306,7 +330,8 @@ public class ImageService {
     }
 
     private void drawWatermark(Posting posting, SVGGraphics2D svgGenerator, PostingBase postingBase) {
-        if (postingBase.getWatermark().getX() == -1 || postingBase.getWatermark().getY() == -1) {
+        if (postingBase.getWatermark().getX() == -1 || postingBase.getWatermark().getY() == -1
+        || posting.getWatermark() == null) {
             return;
         }
         BufferedImage watermarkImage = posting.getWatermark().getBufferedImage();
