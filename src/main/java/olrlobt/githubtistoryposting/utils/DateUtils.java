@@ -7,22 +7,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
-
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DateUtils {
 
-	public static LocalDate parser(String txtDate) {
-		if (txtDate.isEmpty() || txtDate.isBlank()) {
-			return null;
-		}
-
-		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+	private static final DateTimeFormatter PARSER_FORMATTER = new DateTimeFormatterBuilder()
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy. M. d. HH:mm"))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy. M. d."))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy.M.d"))
@@ -30,14 +22,20 @@ public class DateUtils {
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX"))
 			.appendOptional(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssZ"))
 			.appendOptional(DateTimeFormatter.ISO_INSTANT) // velog
-			.appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME) // anyting-else
+			.appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME) // anything else
 			.appendOptional(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 			.parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
 			.parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
 			.toFormatter();
 
+	public static LocalDate parser(String txtDate) {
+		if (txtDate.isEmpty() || txtDate.isBlank()) {
+			return null;
+		}
+
 		try {
-			TemporalAccessor ta = formatter.parseBest(txtDate, ZonedDateTime::from, Instant::from, LocalDate::from, LocalDateTime::from);
+			TemporalAccessor ta = PARSER_FORMATTER.parseBest(txtDate, ZonedDateTime::from, Instant::from,
+					LocalDate::from, LocalDateTime::from);
 
 			if (ta instanceof Instant) {
 				ZonedDateTime zdt = ((Instant)ta).atZone(ZoneId.systemDefault());

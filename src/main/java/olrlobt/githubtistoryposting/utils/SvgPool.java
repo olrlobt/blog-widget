@@ -1,12 +1,13 @@
 package olrlobt.githubtistoryposting.utils;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.util.XMLResourceDescriptor;
@@ -52,14 +53,14 @@ public class SvgPool {
 
     public byte[] toByte(SVGGraphics2D svgGenerator) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(2097152); // 2MB
-        Writer out = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), 65536);
+        Writer out = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8), 65536);
         svgGenerator.stream(out, true);
         out.close();
         return outputStream.toByteArray();
     }
 
 
-    public static SVGDocument loadSVGDocument(Resource resource) {
+    public SVGDocument loadSVGDocument(Resource resource) {
         try (InputStream inputStream = resource.getInputStream()) {
             String parser = XMLResourceDescriptor.getXMLParserClassName();
             SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser);

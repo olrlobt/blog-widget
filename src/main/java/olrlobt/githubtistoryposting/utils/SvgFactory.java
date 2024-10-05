@@ -1,18 +1,21 @@
 package olrlobt.githubtistoryposting.utils;
 
+import java.awt.Dimension;
 import java.awt.RenderingHints;
-import olrlobt.githubtistoryposting.domain.PostingBase;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
-import org.apache.commons.pool2.BasePooledObjectFactory;
 
 @Component
 public class SvgFactory extends BasePooledObjectFactory<SVGGraphics2D> {
+
+    private final Dimension DEFAULT_CANVAS_SIZE = new Dimension(0, 0);
+
     @Override
     public SVGGraphics2D create() {
         DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
@@ -35,8 +38,7 @@ public class SvgFactory extends BasePooledObjectFactory<SVGGraphics2D> {
 
     @Override
     public void passivateObject(PooledObject<SVGGraphics2D> pooledObject) {
-        // 객체 반환 시 초기화 작업 (예: 객체 상태 초기화)
         SVGGraphics2D svgGenerator = pooledObject.getObject();
-        svgGenerator.setSVGCanvasSize(new java.awt.Dimension(0, 0));
+        svgGenerator.setSVGCanvasSize(DEFAULT_CANVAS_SIZE);
     }
 }

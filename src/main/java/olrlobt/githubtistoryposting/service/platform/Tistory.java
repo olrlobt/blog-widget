@@ -82,7 +82,7 @@ public class Tistory implements Blog {
         Elements postings = document.select(theme.getPostingLink());
         index %= postingOfPage;
         if (index >= postings.size()) {
-            return new RedirectView(document.select(BlogInfo.TISTORY.getBlogUrl()).attr("content"));
+            return new RedirectView(document.selectFirst(BlogInfo.TISTORY.getBlogUrl()).attr("content"));
         }
 
         String postingParam = postings.get(index).attr("href");
@@ -95,9 +95,9 @@ public class Tistory implements Blog {
 
         String originalThumb = getBlogImage(document);
         String resizeThumbnail = UrlUtils.changeThumbnailSize(originalThumb, ImageSize.TistoryBlog.getSizeParam());
-        String title = document.select(BlogInfo.TISTORY.getBlogName())
+        String title = document.selectFirst(BlogInfo.TISTORY.getBlogName())
                 .attr("content");
-        String footer = document.select(BlogInfo.TISTORY.getBlogUrl())
+        String footer = document.selectFirst(BlogInfo.TISTORY.getBlogUrl())
                 .attr("content");
 
         return Posting.createBlogPosting(resizeThumbnail, title, footer, PostingBase.BlogInfo);
@@ -108,7 +108,7 @@ public class Tistory implements Blog {
     }
 
     private String getBlogImage(Document document) {
-        return document.select(BlogInfo.TISTORY.getBlogThumb()).attr("content");
+        return document.selectFirst(BlogInfo.TISTORY.getBlogThumb()).attr("content");
     }
 
     private TistoryTheme findTistoryTheme(Document document) {
@@ -142,9 +142,9 @@ public class Tistory implements Blog {
         }
         Element posting = postings.get(index);
         String thumbnail = findThumbnail(posting, theme.getPostingThumb());
-        String title = posting.select(theme.getPostingTitle()).text();
-        String content = posting.select(theme.getPostingContent()).text();
-        LocalDate date = DateUtils.parser(posting.select(theme.getPostingDate()).text());
+        String title = posting.selectFirst(theme.getPostingTitle()).text();
+        String content = posting.selectFirst(theme.getPostingContent()).text();
+        LocalDate date = DateUtils.parser(posting.selectFirst(theme.getPostingDate()).text());
         String sanitizeUrl = UrlUtils.sanitizeUrl(url);
         return new Posting(thumbnail, blogImage, blogName, title, content, date,
                 sanitizeUrl, blogName + ".tistory", postingBase, watermark);
@@ -152,7 +152,7 @@ public class Tistory implements Blog {
 
     private static String findThumbnail(Element posting, String themeTag) {
         String thumbnail = null;
-        Element thumb = posting.select(themeTag).first();
+        Element thumb = posting.selectFirst(themeTag);
 
         if (thumb != null) {
             String src = thumb.attr("src");
