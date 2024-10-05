@@ -16,7 +16,7 @@ public class UrlUtils {
     }
 
     public static String of(String blogName, String url) {
-        return createTistoryUrl(blogName) + "/" + url;
+        return createTistoryUrl(blogName) + url;
     }
 
     public static String changeThumbnailSize(String url, String size) {
