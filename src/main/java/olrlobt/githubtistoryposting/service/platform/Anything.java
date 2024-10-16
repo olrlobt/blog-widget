@@ -22,10 +22,10 @@ public class Anything implements Blog {
     @Override
     public Posting posting(String url, int index, PostingBase postingBase) throws IOException {
         Document document = scrapingUtils.byUrl(url);
-        String thumb = document.select("head meta[property=og:image]").attr("content");
-        String title = document.select("head meta[property=og:title]").attr("content");
-        String content = document.select("head meta[property=og:description]").attr("content");
-        String publishedTime = document.select("head meta[property=article:published_time]").attr("content");
+        String thumb = document.selectFirst("head meta[property=og:image]").attr("content");
+        String title = document.selectFirst("head meta[property=og:title]").attr("content");
+        String content = document.selectFirst("head meta[property=og:description]").attr("content");
+        String publishedTime = document.selectFirst("head meta[property=article:published_time]").attr("content");
 
         return new Posting(thumb, title, content, DateUtils.parser(publishedTime), UrlUtils.getSiteName(url),
                 url, postingBase);
@@ -39,8 +39,8 @@ public class Anything implements Blog {
     @Override
     public Posting blog(String url) throws IOException {
         Document document = scrapingUtils.byUrl(url);
-        String thumb = document.select("head meta[property=og:image]").attr("content");
-        String title = document.select("head meta[property=og:title]").attr("content");
+        String thumb = document.selectFirst("head meta[property=og:image]").attr("content");
+        String title = document.selectFirst("head meta[property=og:title]").attr("content");
         return Posting.createBlogPosting(thumb, title, url, PostingBase.BlogInfo);
     }
 }
