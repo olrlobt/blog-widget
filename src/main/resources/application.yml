@@ -10,6 +10,20 @@ server:
       enabled: true
       force: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health  # prometheus와 health 엔드포인트 활성화
+  prometheus:
+    metrics:
+      export:
+        enabled: true # Prometheus 메트릭 활성화
+  endpoint:
+    prometheus:
+      enabled: true  # Prometheus 엔드포인트 활성화
+    health:
+      enabled: true  # Health 엔드포인트 활성화
 
 ---
 spring:

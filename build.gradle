@@ -41,7 +41,10 @@ dependencies {
     implementation 'com.twelvemonkeys.imageio:imageio-tiff:3.11.0'
     implementation 'com.twelvemonkeys.imageio:imageio-core:3.11.0'
     implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.12.0'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
+
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
