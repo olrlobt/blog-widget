@@ -1,13 +1,74 @@
+@font-face {
+  font-family: "Pretendard-Regular";
+  src: url("https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff")
+  format("woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+  font-family: "Pretendard-Regular";
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-use-select: none;
+  user-select: none;
+  -ms-overflow-style: none;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+input, button{
+  font-size: 1.2vw;
+}
+
+:root {
+  --color-bg: #fffef0;
+  --color-nav: #a6a6a6;
+  --color-important: #4d4d4d;
+  --color-text-important: #5fa1c4;
+  --color-box-important: #f23f3f;
+  --color-point-yellow: #ffd43a;
+  --color-point-warning: #ff3f3f;
+  --color-divide: #868484;
+  --font-logo: "Montserrat", sans-serif;
+}
+
+* {
+  font-family: "Pretendard-Regular";
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  color: var(--color-important);
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  border: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+  "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+  monospace;
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-nav);
+}
+
+button {
+  border: none;
+  background-color: transparent;
+}
+
+input {
+  font-family: "Pretendard-Regular";
 }
