@@ -1,23 +1,38 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Content from './components/Content';
+import IntroducePage from './pages/IntroducePage';
 import styled from 'styled-components';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import ExamplePage from './pages/ExamplePage';
+import ApiDocsPage from './pages/ApiDocsPage';
 
 const AppContainer = styled.div`
     font-family: Arial, sans-serif;
-    background-color: #f3f5f7; /* 메인 배경색 설정 */
-    min-height: 100vh; /* 화면 전체를 채우기 위해 최소 높이 설정 */
+    background: linear-gradient(
+            to bottom right,
+            rgba(148, 158, 213, 0.3),
+            rgba(145, 160, 213, 0.3),
+            rgba(153, 155, 213, 0.3),
+            rgba(127, 172, 215, 0.3),
+            rgba(125, 173, 215, 0.3),
+            rgba(150, 157, 213, 0.3),
+            rgba(122, 175, 215, 0.3),
+            rgba(130, 170, 215, 0.3),
+            rgba(140, 163, 213, 0.3)
+    );
+    min-height: 100vh;
 `;
 
 const MainContainer = styled.div`
     display: flex;
 `;
 
-
-const ContentContainer = styled(Content)`
-    flex: 3; // Content가 3/4 정도 차지
+const ContentContainer = styled(IntroducePage)`
+    flex: 3;
     padding: 20px;
+    overflow: visible;
 `;
 
 function App() {
@@ -28,6 +43,8 @@ function App() {
                 <MainContainer>
                     <Routes>
                         <Route path="/" element={<ContentContainer />} />
+                        <Route path="/api-docs" element={<ApiDocsPage />} />
+                        <Route path="/examples" element={<ExamplePage />} />
                     </Routes>
                 </MainContainer>
             </AppContainer>

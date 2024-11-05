@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { FaGithub } from 'react-icons/fa';
 import { SiTistory } from 'react-icons/si';
 
@@ -11,7 +12,7 @@ const NavbarContainer = styled.nav`
     border-bottom: solid 1px #e9ebed;
     display: flex;
     justify-content: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 그림자 추가 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 `;
 
 const NavbarContent = styled.div`
@@ -19,12 +20,27 @@ const NavbarContent = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 1220px; /* 가운데에 고정된 너비 */
+    width: 100%;
+    max-width: 1220px;
 `;
 
-const Title = styled.h1`
-    font-size: 1.5em;
-    margin: 0;
+const Title = styled.div`
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+    a {
+        color: black;
+        text-decoration: none;
+        display: flex;
+        align-items: center; 
+    }
+`;
+
+const Logo = styled.img`
+    width: 35px;
+    height: auto;
+    border-radius: 8px;
+    margin-right: 10px;
 `;
 
 const LinksContainer = styled.div`
@@ -41,6 +57,12 @@ const Links = styled.div`
         color: black;
         margin-left: 15px;
         text-decoration: none;
+        font-size: 1em;
+
+        &:hover {
+            color: #4a90e2;
+            text-decoration: underline;
+        }
     }
 `;
 
@@ -51,14 +73,18 @@ const IconLinks = styled.div`
     a {
         color: black;
         margin-left: 10px;
+
+        &:hover {
+            color: #4a90e2;
+        }
     }
 
     .github-icon {
-        font-size: 1.4em; /* GitHub 아이콘 크기 증가 */
+        font-size: 1.4em;
     }
 
     .tistory-icon {
-        font-size: 1.1em; /* Tistory 아이콘 기본 크기 */
+        font-size: 1.2em;
     }
 `;
 
@@ -67,18 +93,33 @@ function Navbar() {
         <NavbarContainer>
             <NavbarContent>
                 <LinksContainer>
-                    <Title>Blog Widget</Title>
+                    <Title>
+                        <Link to="/">
+                            <Logo src={`${process.env.PUBLIC_URL}/blogwidget_logo2.png`} alt="Blog Widget Example" />
+                            Blog Widget
+                        </Link>
+                    </Title>
                     <Links>
-                        <a href="/about">소개</a>
-                        <a href="/get-started">API 시작하기</a>
-                        <a href="/examples">세트 예제</a>
+                        <Link to="/">소개</Link>
+                        <Link to="/api-docs">API 시작하기</Link>
+                        <Link to="/examples">세트 예제</Link>
                     </Links>
                 </LinksContainer>
                 <IconLinks>
-                    <a href="https://github.com/olrlobt" target="_blank" rel="noopener noreferrer" className="github-icon">
+                    <a
+                        href="https://github.com/olrlobt"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="github-icon"
+                    >
                         <FaGithub />
                     </a>
-                    <a href="https://olrlobt.tistory.com" target="_blank" rel="noopener noreferrer" className="tistory-icon">
+                    <a
+                        href="https://olrlobt.tistory.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tistory-icon"
+                    >
                         <SiTistory />
                     </a>
                 </IconLinks>
